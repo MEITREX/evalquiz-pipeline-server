@@ -2,7 +2,6 @@ betterproto[compiler]==2.0.0b6
 grpcio
 grpcio-tools
 grpclib
-pydantic
 blake3
 pytest
 pytest-asyncio
@@ -11,7 +10,6 @@ mypy
 pyflakes
 black
 jsonpickle
-schedule
 sphinx
 sphinx_rtd_theme
 pymongo
