@@ -14,7 +14,7 @@ class PipelineServerService(PipelineServerBase):
     """Serves endpoints for material manipulation."""
 
     def __init__(self) -> None:
-        self.pipeline_executor = PipelineExecutor()
+        self.pipeline_executor = PipelineExecutor({})
 
     async def iterate_config(
         self, internal_config: InternalConfig
