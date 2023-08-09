@@ -1,3 +1,4 @@
+from collections import defaultdict
 from evalquiz_pipeline_server.pipeline_execution.pipeline_executor import (
     PipelineExecutor,
 )
@@ -6,6 +7,7 @@ from evalquiz_proto.shared.generated import (
     PipelineServerBase,
     PipelineStatus,
 )
+
 # from grpclib.server import Server
 from typing import AsyncIterator
 
@@ -14,7 +16,7 @@ class PipelineServerService(PipelineServerBase):
     """Serves endpoints for material manipulation."""
 
     def __init__(self) -> None:
-        self.pipeline_executor = PipelineExecutor({})
+        self.pipeline_executor = PipelineExecutor(defaultdict())
 
     async def iterate_config(
         self, internal_config: InternalConfig

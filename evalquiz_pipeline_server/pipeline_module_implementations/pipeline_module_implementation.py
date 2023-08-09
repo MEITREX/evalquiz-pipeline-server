@@ -1,11 +1,18 @@
-from abc import ABC, abstractmethod
-from typing import Any, Generic, TypeVar
+from abc import abstractmethod
+from typing import Any
 from evalquiz_proto.shared.generated import PipelineModule
 
-class PipelineModuleImplementation(PipelineModule):
 
-    def __init__(self, description: str):
-        self.description = description
+class PipelineModuleImplementation:
+    def __init__(
+        self,
+        pipeline_module: PipelineModule,
+        split: bool = False,
+        merge: bool = False,
+    ):
+        self.pipeline_module = pipeline_module
+        self.split = split
+        self.merge = merge
 
     @abstractmethod
     def run(input: Any) -> Any:
