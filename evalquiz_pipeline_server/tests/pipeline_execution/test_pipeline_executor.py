@@ -1,18 +1,20 @@
-from collections import defaultdict
 from typing import Any, Tuple
 import pytest
+from evalquiz_pipeline_server.exceptions import (
+    PipelineModuleCompositionNotValidException,
+)
 from evalquiz_pipeline_server.pipeline_execution.pipeline import Pipeline
 from evalquiz_pipeline_server.pipeline_execution.pipeline_executor import (
     PipelineExecutor,
 )
-from evalquiz_pipeline_server.pipeline_module_implementations.pipeline_module_implementation import (
-    PipelineModuleImplementation,
+from evalquiz_pipeline_server.pipeline_module_implementations.internal_pipeline_module import (
+    InternalPipelineModule,
 )
 from evalquiz_proto.shared.generated import PipelineModule
 
 
-class TestPipelineModuleImplementation(PipelineModuleImplementation):
-    def run(input: Any) -> Any:
+class TestPipelineModuleImplementation(InternalPipelineModule):
+    def run(self, input: Any) -> Any:
         raise NotImplementedError()
 
 
@@ -46,35 +48,19 @@ def test_validate_implementation_for_pipeline(
 ) -> None:
     (a_split, b_split, c_split) = split_configurations
     (a_merge, b_merge, c_merge) = merge_configurations
-    test_pipeline_modules = [
-        PipelineModule("a", "str", "str"),
-        PipelineModule("b", "str", "int"),
-        PipelineModule("c", "int", "Any"),
+    test_pipeline_modules: list[InternalPipelineModule] = [
+        TestPipelineModuleImplementation(
+            PipelineModule("a", "str", "str"), split=a_split, merge=a_merge
+        ),
+        TestPipelineModuleImplementation(
+            PipelineModule("b", "str", "int"), split=b_split, merge=b_merge
+        ),
+        TestPipelineModuleImplementation(
+            PipelineModule("c", "int", "Any"), split=c_split, merge=c_merge
+        ),
     ]
-    test_pipeline = Pipeline("test_pipeline", test_pipeline_modules)
-    test_pipeline_module_implementations: defaultdict[
-        "str", PipelineModuleImplementation
-    ] = defaultdict(
-        None,
-        {
-            "a": TestPipelineModuleImplementation(
-                test_pipeline_modules[0], split=a_split, merge=a_merge
-            ),
-            "b": TestPipelineModuleImplementation(
-                test_pipeline_modules[0], split=b_split, merge=b_merge
-            ),
-            "c": TestPipelineModuleImplementation(
-                test_pipeline_modules[0], split=c_split, merge=c_merge
-            ),
-        },
-    )
-    test_pipeline_dict: defaultdict["str", Pipeline] = defaultdict(
-        None, {test_pipeline.reference: test_pipeline}
-    )
-    pipeline_executor = PipelineExecutor(
-        test_pipeline_dict, test_pipeline_module_implementations
-    )
-    assert (
-        pipeline_executor.validate_implementation_for_pipeline(test_pipeline.reference)
-        == expected
-    )
+    if expected == False:
+        with pytest.raises(PipelineModuleCompositionNotValidException):
+            Pipeline("test_pipeline", test_pipeline_modules)
+    else:
+        Pipeline("test_pipeline", test_pipeline_modules)
