@@ -13,7 +13,7 @@ from evalquiz_pipeline_server.pipeline_module_implementations.internal_pipeline_
 from evalquiz_proto.shared.generated import PipelineModule
 
 
-class TestPipelineModuleImplementation(InternalPipelineModule):
+class TestInternalPipelineModule(InternalPipelineModule):
     def run(self, input: Any) -> Any:
         raise NotImplementedError()
 
@@ -49,13 +49,13 @@ def test_validate_implementation_for_pipeline(
     (a_split, b_split, c_split) = split_configurations
     (a_merge, b_merge, c_merge) = merge_configurations
     test_pipeline_modules: list[InternalPipelineModule] = [
-        TestPipelineModuleImplementation(
+        TestInternalPipelineModule(
             PipelineModule("a", "str", "str"), split=a_split, merge=a_merge
         ),
-        TestPipelineModuleImplementation(
+        TestInternalPipelineModule(
             PipelineModule("b", "str", "int"), split=b_split, merge=b_merge
         ),
-        TestPipelineModuleImplementation(
+        TestInternalPipelineModule(
             PipelineModule("c", "int", "Any"), split=c_split, merge=c_merge
         ),
     ]

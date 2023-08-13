@@ -6,11 +6,13 @@ from evalquiz_pipeline_server.pipeline_module_implementations.internal_pipeline_
     InternalPipelineModule,
 )
 
-
 class PipelineExecution:
     def __init__(self, input: Any, pipeline: Pipeline) -> None:
         self.pipeline = pipeline
         self.ray_object_ref = _run.remote(input, self.pipeline)
+        
+    def run(self) -> Any:    
+        return ray.get(self.ray_object_ref)
 
 
 @ray.remote
@@ -20,8 +22,8 @@ def _run(input: Any, pipeline: Pipeline) -> Any:
     except KeyError:
         return input
     if not pipeline_module.split and not pipeline_module.merge:
-        input = _run_pipeline_module.remote(input, pipeline_module)
-        input = _run.remote(input, pipeline)
+        output = _run_pipeline_module.remote(input, pipeline_module)
+        input = _run.remote(output, pipeline)
     if pipeline_module.split:
         _run_pipeline_module_split(input, pipeline_module)
         input = [_run.remote(element, pipeline) for element in input]
@@ -50,4 +52,4 @@ def _run_pipeline_module_split(
 
 @ray.remote
 def _run_pipeline_module(input: Any, pipeline_module: InternalPipelineModule) -> Any:
-    pipeline_module.run(input)
+    return pipeline_module.run(input)
