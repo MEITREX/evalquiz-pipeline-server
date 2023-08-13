@@ -1,13 +1,13 @@
 from typing import Any, Tuple
 import pytest
-from evalquiz_pipeline_server.exceptions import (
+from evalquiz_pipeline_server.pipeline_execution.exceptions import (
     PipelineModuleCompositionNotValidException,
 )
 from evalquiz_pipeline_server.pipeline_execution.pipeline import Pipeline
 from evalquiz_pipeline_server.pipeline_execution.pipeline_executor import (
     PipelineExecutor,
 )
-from evalquiz_pipeline_server.pipeline_module_implementations.internal_pipeline_module import (
+from evalquiz_pipeline_server.pipeline_execution.internal_pipeline_module import (
     InternalPipelineModule,
 )
 from evalquiz_proto.shared.generated import PipelineModule

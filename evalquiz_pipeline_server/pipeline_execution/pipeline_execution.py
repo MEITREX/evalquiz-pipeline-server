@@ -1,5 +1,5 @@
 from typing import Any, AsyncIterator, Optional
-from evalquiz_pipeline_server.exceptions import PipelineExecutionException
+from evalquiz_pipeline_server.pipeline_execution.exceptions import PipelineExecutionException
 from evalquiz_pipeline_server.pipeline_execution.pipeline import Pipeline
 from evalquiz_proto.shared.generated import BatchStatus, ModuleStatus, PipelineModule, PipelineStatus
 
@@ -9,7 +9,7 @@ class PipelineExecution:
         self.input = input
         first_pipeline_module = self.pipeline.pipeline_modules[0]
         self.pipeline_status = self._build_pipeline_status(first_pipeline_module, ModuleStatus.IDLE)
-        
+
     async def run(self) -> AsyncIterator[PipelineStatus]:
         input = self.input
         for pipeline_module in self.pipeline.pipeline_modules:

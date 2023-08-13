@@ -5,7 +5,7 @@ from evalquiz_pipeline_server.pipeline_execution.pipeline_execution import (
 )
 import pytest
 
-from evalquiz_pipeline_server.pipeline_module_implementations.internal_pipeline_module import (
+from evalquiz_pipeline_server.pipeline_execution.internal_pipeline_module import (
     InternalPipelineModule,
 )
 from evalquiz_proto.shared.generated import ModuleStatus, PipelineModule
