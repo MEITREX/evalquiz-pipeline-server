@@ -33,19 +33,7 @@ class PipelineExecutor:
         if reference in self.pipelines.keys():
             del self.pipelines[reference]
 
-    def run_pipeline(self, reference: str, input: Any) -> None:
+    def run_pipeline(self, reference: str, input: Any) -> AsyncIterator[PipelineStatus]:
         pipeline = self.pipelines[reference]
         pipeline_execution = PipelineExecution(input, pipeline)
-
-    async def get_pipeline_status_on_change(
-        self, pipeline_thread: str
-    ) -> AsyncIterator[PipelineStatus]:
-        # This is just for test purposes, # Not Implemented!
-        yield PipelineStatus(
-            None,
-            [
-                BatchStatus(
-                    error_message=None, pipeline_module=PipelineModule("", "", "")
-                )
-            ],
-        )
+        return pipeline_execution.run()

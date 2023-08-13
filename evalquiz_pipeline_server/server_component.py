@@ -21,9 +21,9 @@ class PipelineServerService(PipelineServerBase):
     async def iterate_config(
         self, internal_config: InternalConfig
     ) -> "AsyncIterator[PipelineStatus]":
-        pipeline_thread = "Test hash!"
-        pipeline_status_iterator = self.pipeline_executor.get_pipeline_status_on_change(
-            pipeline_thread
+        pipeline_status_iterator = self.pipeline_executor.run_pipeline(
+            "evalquiz_config_iteration",
+            internal_config
         )
         while True:
             try:
