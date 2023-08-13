@@ -7,7 +7,7 @@ from evalquiz_pipeline_server.pipeline_execution.pipeline_execution import (
 from evalquiz_pipeline_server.pipeline_execution.internal_pipeline_module import (
     InternalPipelineModule,
 )
-from evalquiz_proto.shared.generated import BatchStatus, PipelineModule, PipelineStatus
+from evalquiz_proto.shared.generated import PipelineStatus
 
 
 class PipelineExecutor:

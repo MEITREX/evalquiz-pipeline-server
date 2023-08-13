@@ -1,4 +1,3 @@
-from collections import defaultdict
 from evalquiz_pipeline_server.pipeline_execution.pipeline_executor import (
     PipelineExecutor,
 )
@@ -21,8 +20,7 @@ class PipelineServerService(PipelineServerBase):
         self, internal_config: InternalConfig
     ) -> "AsyncIterator[PipelineStatus]":
         pipeline_status_iterator = self.pipeline_executor.run_pipeline(
-            "evalquiz_config_iteration",
-            internal_config
+            "evalquiz_config_iteration", internal_config
         )
         while True:
             try:
