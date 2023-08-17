@@ -27,7 +27,7 @@ class PipelineServerService(PipelineServerBase):
             internal_config (InternalConfig): Evalquiz config to iterate.
 
         Returns:
-            AsyncIterator[MaterialUploadData]: An iterator which elements represent the current status of the config iteration.
+            AsyncIterator[PipelineStatus]: An iterator which elements represent the current status of the config iteration.
         """
         pipeline_status_iterator = self.pipeline_executor.run_pipeline(
             "evalquiz_config_iteration", internal_config
