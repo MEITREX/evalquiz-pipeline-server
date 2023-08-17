@@ -14,5 +14,5 @@ class QuestionSpecificationMerge(InternalPipelineModule):
         )
         super().__init__(pipeline_module)
 
-    def run(self, input: Any) -> Any:
+    async def run(self, input: Any) -> Any:
         raise NotImplementedError()

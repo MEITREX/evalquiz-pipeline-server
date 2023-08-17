@@ -12,16 +12,28 @@ from evalquiz_proto.shared.generated import ModuleStatus, PipelineModule
 
 
 class IncInternalPipelineModule(InternalPipelineModule):
+    """Test InternalPipelineModule that increments an integer value."""
+
     def __init__(self) -> None:
+        """Constructor of IncInternalPipelineModule."""
         pipeline_module = PipelineModule("inc", "int", "int")
         super().__init__(pipeline_module)
 
-    def run(self, input: Any) -> Any:
+    async def run(self, input: Any) -> Any:
+        """Incrementation function.
+
+        Args:
+            input (Any): Integer value
+
+        Returns:
+            Any: Integer value incremented by 1.
+        """
         return input + 1
 
 
 @pytest.mark.asyncio
 async def test_linear_pipeline_execution() -> None:
+    """Tests execution of a Pipeline with 3 IncInternalPipelineModule instances."""
     inc_pipeline_module = IncInternalPipelineModule()
     pipeline_modules: list[InternalPipelineModule] = [
         inc_pipeline_module,

@@ -11,14 +11,24 @@ from typing import AsyncIterator
 
 
 class PipelineServerService(PipelineServerBase):
-    """Serves endpoints for material manipulation."""
+    """Serves endpoints for Evalquiz config iteration."""
 
     def __init__(self) -> None:
+        """Constructor of PipelineServerService."""
         self.pipeline_executor = PipelineExecutor()
 
     async def iterate_config(
         self, internal_config: InternalConfig
     ) -> "AsyncIterator[PipelineStatus]":
+        """Asynchronous method that is used by gRPC as an endpoint.
+        Iterates an Evalquiz config by running the `evalquiz_config_iteration` pipeline on the `internal_config` input.
+
+        Args:
+            internal_config (InternalConfig): Evalquiz config to iterate.
+
+        Returns:
+            AsyncIterator[MaterialUploadData]: An iterator which elements represent the current status of the config iteration.
+        """
         pipeline_status_iterator = self.pipeline_executor.run_pipeline(
             "evalquiz_config_iteration", internal_config
         )

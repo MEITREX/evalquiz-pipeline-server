@@ -1,4 +1,4 @@
-from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.material_filter import (
+from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.material_filter.material_filter import (
     MaterialFilter,
 )
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_drop import (
@@ -17,7 +17,10 @@ from evalquiz_pipeline_server.pipeline_execution.pipeline import Pipeline
 
 
 class ConfigIterationPipeline(Pipeline):
+    """Evalquiz config iteration pipeline."""
+
     def __init__(self) -> None:
+        """Constructor of ConfigIterationPipeline."""
         pipeline_modules = [
             MaterialFilter(),
             QuestionGeneration(),
