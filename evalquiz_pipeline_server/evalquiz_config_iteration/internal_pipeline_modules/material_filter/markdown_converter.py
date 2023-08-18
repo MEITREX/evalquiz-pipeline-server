@@ -6,17 +6,37 @@ import subprocess
 
 
 class MarkdownConverter:
-    def __init__(self) -> None:
-        self.path_dictionary_controller = PathDictionaryController(
-            mongodb_database="lecture_materials_markdown_db"
-        )
-        self.material_storage_path = (
+    def __init__(
+        self,
+        material_storage_path: Path = (
             Path(__file__).parent / "lecture_materials_markdown"
-        )
+        ),
+        path_dictionary_controller: PathDictionaryController = PathDictionaryController(
+            mongodb_database="lecture_materials_markdown_db"
+        ),
+    ) -> None:
+        """Constructor of MarkdownConverter.
+
+        Args:
+            material_storage_path (Path, optional): Path to where the generated markdown files should be stored. Defaults to ( Path(__file__).parent / "lecture_materials_markdown" ).
+            path_dictionary_controller (PathDictionaryController, optional): PathDictionaryController manages references from unconverted lecture materials to their converted markdown versions. Defaults to PathDictionaryController( mongodb_database="lecture_materials_markdown_db" ).
+        """
+        self.path_dictionary_controller = path_dictionary_controller
+        self.material_storage_path = material_storage_path
 
     def convert_material(
         self, internal_lecture_material: InternalLectureMaterial
     ) -> InternalLectureMaterial:
+        """Converts InternalLectureMaterial to its markdown version.
+        Retrieves converted version from self.path_dictionary_controller,
+        otherwise a markdown version is generated and  added to self.path_dictionary_controller.
+
+        Args:
+            internal_lecture_material (InternalLectureMaterial): Input InternalLectureMaterial.
+
+        Returns:
+            InternalLectureMaterial: Converted output InternalLectureMaterial, which references a markdown document.
+        """
         try:
             lecture_material = internal_lecture_material.cast_to_lecture_material()
             return self.retrieve_converted_material(lecture_material)
@@ -33,6 +53,14 @@ class MarkdownConverter:
     def retrieve_converted_material(
         self, lecture_material: LectureMaterial
     ) -> InternalLectureMaterial:
+        """Retrieves markdown converted InternalLectureMaterial from self.path_dictionary_controller.
+
+        Args:
+            lecture_material (LectureMaterial): LectureMaterial to retrieve.
+
+        Returns:
+            InternalLectureMaterial: Converted output InternalLectureMaterial, which references a markdown document.
+        """
         local_path = self.path_dictionary_controller.get_file_path_from_hash(
             lecture_material.hash
         )
@@ -41,6 +69,14 @@ class MarkdownConverter:
     def run_pandoc_conversion(
         self, internal_lecture_material: InternalLectureMaterial
     ) -> InternalLectureMaterial:
+        """Runs subprocess with pandoc to convert file to markdown.
+
+        Args:
+            internal_lecture_material (InternalLectureMaterial): Input InternalLectureMaterial to convert.
+
+        Returns:
+            InternalLectureMaterial: Converted output InternalLectureMaterial, which references a markdown document.
+        """
         input_path = internal_lecture_material.local_path
         output_path = self.material_storage_path / (input_path.stem + ".md")
         subprocess.run(["pandoc", input_path, "-o", output_path])
