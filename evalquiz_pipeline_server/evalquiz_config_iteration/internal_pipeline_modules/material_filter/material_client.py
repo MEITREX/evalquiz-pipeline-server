@@ -23,20 +23,22 @@ from evalquiz_proto.shared.path_dictionary_controller import (
 class MaterialClient:
     def __init__(
         self,
-        material_server_urls: list[str],
+        material_server_urls: list[str] = [],
         material_storage_path: Path = Path(__file__).parent / "lecture_materials",
+        path_dictionary_controller: PathDictionaryController = PathDictionaryController(),
     ) -> None:
         """Constructor of MaterialClient.
 
         Args:
-            material_server_urls (list[str]): A list of URLs where material servers can be found.
+            material_server_urls (list[str]): A list of URLs where material servers can be found. Defaults to [].
             material_storage_path (Path, optional): Specifies the path where lecture materials are stored. Defaults to Path(__file__).parent/"lecture_materials".
+            path_dictionary_controller (PathDictionaryController): Component for managing lecture material file accesses on system.
         """
         self.material_server_port = 28390
         self.request_timeout_seconds = 2.0
         self.material_server_urls = material_server_urls
         self.material_storage_path = material_storage_path
-        self.path_dictionary_controller = PathDictionaryController()
+        self.path_dictionary_controller = path_dictionary_controller
 
     async def query_material(
         self, lecture_material: LectureMaterial
@@ -87,7 +89,7 @@ class MaterialClient:
             if extension is None:
                 raise NoMimetypeMappingException()
             local_path = self.material_storage_path / lecture_material.hash
-            local_path = local_path.parent / (local_path.name + extension)
+            local_path = local_path.parent / (local_path.stem + extension)
             async_iterator_bytes = self._to_async_iterator_bytes(
                 material_upload_data_iterator
             )

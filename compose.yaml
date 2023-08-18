@@ -2,3 +2,20 @@ services:
   app:
     build:
       context: .
+    links:
+      - db
+  db:
+    image: mongo
+    restart: always
+    volumes:
+      - mongodb:/data/db
+  mongoexpress:
+    image: mongo-express
+    ports:
+        - "8081:8082"
+    links:
+      - db
+    environment: 
+        - ME_CONFIG_MONGODB_URL=mongodb://db:27017
+volumes:
+  mongodb:

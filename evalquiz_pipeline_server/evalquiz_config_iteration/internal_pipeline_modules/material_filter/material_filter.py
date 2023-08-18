@@ -14,6 +14,7 @@ class MaterialFilter(InternalPipelineModule):
             "material_filter", "InternalConfig", "Tuple[InternalConfig, str]"
         )
         super().__init__(pipeline_module)
+        self.material_client = MaterialClient()
 
     async def run(self, input: Any) -> Any:
         if not isinstance(input, InternalConfig):
