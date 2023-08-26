@@ -14,3 +14,5 @@ sphinx
 sphinx_rtd_theme
 pymongo
 gensim
+nltk
+tiktoken

@@ -1,9 +1,9 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import Any
 from evalquiz_proto.shared.generated import PipelineModule
 
 
-class InternalPipelineModule(PipelineModule):
+class InternalPipelineModule(PipelineModule, ABC):
     """An implementation of a PipelineModule."""
 
     def __init__(
