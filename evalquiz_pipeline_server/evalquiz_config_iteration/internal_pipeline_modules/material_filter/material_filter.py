@@ -1,9 +1,15 @@
 from typing import Any, List
+from evalquiz_pipeline_server.evalquiz_config_iteration.default_internal_config import (
+    DefaultInternalConfig,
+)
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.material_filter.markdown_converter import (
     MarkdownConverter,
 )
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.material_filter.material_client import (
     MaterialClient,
+)
+from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.material_filter.text_extractors.text_extractor import (
+    TextExtractor,
 )
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.material_filter.text_extractors.topic_extension_text_extractor import (
     TopicExtensionTextExtractor,
@@ -13,6 +19,7 @@ from evalquiz_pipeline_server.pipeline_execution.internal_pipeline_module import
 )
 from evalquiz_proto.shared.generated import Batch, InternalConfig, PipelineModule
 from evalquiz_proto.shared.internal_lecture_material import InternalLectureMaterial
+import tiktoken
 
 
 class MaterialFilter(InternalPipelineModule):
@@ -22,12 +29,56 @@ class MaterialFilter(InternalPipelineModule):
         )
         super().__init__(pipeline_module)
         self.markdown_converter = MarkdownConverter()
-        self.text_extractor = TopicExtensionTextExtractor(1000)
+        self.default_internal_config = DefaultInternalConfig()
 
     async def run(self, input: Any) -> Any:
         if not isinstance(input, InternalConfig):
             raise TypeError()
+        model = self.resolve_model(input)
+        encode_function = tiktoken.encoding_for_model(model)
         material_client = MaterialClient(input.material_server_urls)
+        text_extractor: TextExtractor = TopicExtensionTextExtractor(
+            1000, encode_function.encode
+        )
+        return [
+            await self.process_batch(batch, material_client, text_extractor)
+            for batch in input.batches
+        ]
+
+    def resolve_model(self, internal_config: InternalConfig) -> str:
+        if (
+            internal_config.generation_settings is not None
+            and internal_config.generation_settings.model is not None
+        ):
+            return internal_config.generation_settings.model
+        elif (
+            self.default_internal_config.generation_settings is not None
+            and self.default_internal_config.generation_settings.model is not None
+        ):
+            return self.default_internal_config.generation_settings.model
+        else:
+            raise ValueError("DefaultInternalConfig not specified correctly.")
+
+    async def process_batch(
+        self,
+        batch: Batch,
+        material_client: MaterialClient,
+        text_extractor: TextExtractor,
+    ) -> str:
+        internal_lecture_materials_md = (
+            await self.collect_internal_lecture_materials_md_for_batch(
+                batch, material_client
+            )
+        )
+        internal_lecture_material_contents = (
+            self.collect_internal_lecture_material_contents(
+                internal_lecture_materials_md
+            )
+        )
+        extracted_text = text_extractor.extract_with_capabilites(
+            internal_lecture_material_contents, batch.capabilites
+        )
+        return extracted_text
 
     async def collect_internal_lecture_materials_md_for_batch(
         self,
@@ -55,22 +106,3 @@ class MaterialFilter(InternalPipelineModule):
                 content = local_file.read()
                 contents.append(content)
         return contents
-
-    async def process_batch(
-        self,
-        batch: Batch,
-        material_client: MaterialClient,
-    ) -> List[str]:
-        internal_lecture_materials_md = (
-            await self.collect_internal_lecture_materials_md_for_batch(
-                batch, material_client
-            )
-        )
-        internal_lecture_material_contents = (
-            self.collect_internal_lecture_material_contents(
-                internal_lecture_materials_md
-            )
-        )
-        extracted_text = self.text_extractor.extract_with_capabilites(
-            internal_lecture_material_contents, batch.capabilites
-        )
