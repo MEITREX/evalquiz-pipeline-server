@@ -7,6 +7,8 @@ from evalquiz_proto.shared.generated import Capability
 import gensim
 import nltk
 
+nltk.download("punkt")
+
 
 class TopicExtensionTextExtractor(TextExtractor):
     def __init__(self, max_tokens: int, encode_function: Callable[[str], Any]):
@@ -17,15 +19,17 @@ class TopicExtensionTextExtractor(TextExtractor):
         self, texts: List[str], capabilites: List[Capability]
     ) -> str:
         random.shuffle(texts)
-        model = gensim.models.Word2Vec(texts)
-        most_similar_words_of_capabilites: dict[
-            Capability, List[Tuple[str, float]]
-        ] = {}
+        preprocessed_texts = [gensim.utils.simple_preprocess(text) for text in texts]
+        model = gensim.models.Word2Vec(preprocessed_texts, min_count=1)
+        most_similar_words_of_capabilites: dict[str, List[Tuple[str, float]]] = {}
         for capability in capabilites:
-            most_similar_words = model.most_similar(
+            most_similar_words = model.wv.most_similar(
                 positive=capability.keywords, topn=5
             )
-            most_similar_words_of_capabilites[capability] = most_similar_words
+            serialized_capability = capability.to_json()
+            most_similar_words_of_capabilites[
+                serialized_capability
+            ] = most_similar_words
         sentences = nltk.sent_tokenize(" ".join(texts))
         keywords = self.compose_keywords(most_similar_words_of_capabilites)
         keyword_sentences = self.find_sentences_with_keywords(sentences, keywords)
@@ -42,7 +46,7 @@ class TopicExtensionTextExtractor(TextExtractor):
             for keyword in keywords:
                 if keyword in sentence:
                     filtered_sentences.append(sentence)
-                    continue
+                    break
         return filtered_sentences
 
     def sentences_to_max_token_length(self, sentences: list[str]) -> list[str]:
@@ -58,11 +62,12 @@ class TopicExtensionTextExtractor(TextExtractor):
 
     def compose_keywords(
         self,
-        most_similar_words_of_capabilites: dict[Capability, List[Tuple[str, float]]],
+        most_similar_words_of_capabilites: dict[str, List[Tuple[str, float]]],
         max_length: Optional[int] = None,
     ) -> List[str]:
         keywords: list[str] = []
-        for capability in most_similar_words_of_capabilites.keys():
+        for serialized_capability in most_similar_words_of_capabilites.keys():
+            capability = Capability().from_json(serialized_capability)
             keywords.extend(capability.keywords)
         ranked_similar_probability_word_pairs: List[Tuple[str, float]] = []
         for probability_word_pairs in most_similar_words_of_capabilites.values():
