@@ -101,7 +101,7 @@ def test_extract_text_part(
 def test_truncate_text(
     text_extractor: TopicExtensionTextExtractor, texts: list[str], text_part: str
 ) -> None:
-    text_extractor.max_tokens = 12
+    text_extractor.max_tokens = 11
     capabilites = [
         Capability(
             ["text"],

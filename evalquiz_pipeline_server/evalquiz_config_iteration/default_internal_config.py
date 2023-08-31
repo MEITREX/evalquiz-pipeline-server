@@ -1,6 +1,21 @@
-from evalquiz_proto.shared.generated import GenerationSettings
+from typing import Optional
+from evalquiz_proto.shared.generated import (
+    Batch,
+    Complete,
+    CourseSettings,
+    EvaluationSettings,
+    GenerationSettings,
+    InternalConfig,
+    Mode,
+)
 
 
-class DefaultInternalConfig:
+class DefaultInternalConfig(InternalConfig):
     def __init__(self) -> None:
-        self.generation_settings = GenerationSettings(model="gpt-4")
+        self.material_server_urls = []
+        self.batches: list[Batch] = []
+        self.course_settings: Optional[CourseSettings] = None
+        self.generation_settings = GenerationSettings(
+            Mode(complete=Complete()), "gpt-4"
+        )
+        self.evaluation_settings: Optional[EvaluationSettings] = None

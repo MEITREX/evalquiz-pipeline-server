@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Optional
 from evalquiz_pipeline_server.evalquiz_config_iteration.default_internal_config import (
     DefaultInternalConfig,
 )
@@ -23,12 +23,17 @@ import tiktoken
 
 
 class MaterialFilter(InternalPipelineModule):
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        material_client: Optional[MaterialClient] = None,
+        markdown_converter: MarkdownConverter = MarkdownConverter(),
+    ) -> None:
         pipeline_module = PipelineModule(
             "material_filter", "InternalConfig", "Tuple[InternalConfig, str]"
         )
         super().__init__(pipeline_module)
-        self.markdown_converter = MarkdownConverter()
+        self.material_client = material_client
+        self.markdown_converter = markdown_converter
         self.default_internal_config = DefaultInternalConfig()
 
     async def run(self, input: Any) -> Any:
@@ -36,7 +41,9 @@ class MaterialFilter(InternalPipelineModule):
             raise TypeError()
         model = self.resolve_model(input)
         encode_function = tiktoken.encoding_for_model(model)
-        material_client = MaterialClient(input.material_server_urls)
+        material_client = self.material_client or MaterialClient(
+            input.material_server_urls
+        )
         text_extractor: TextExtractor = TopicExtensionTextExtractor(
             1000, encode_function.encode
         )
