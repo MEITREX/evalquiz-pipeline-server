@@ -29,7 +29,6 @@ from evalquiz_proto.shared.generated import (
 from evalquiz_proto.shared.internal_lecture_material import InternalLectureMaterial
 
 
-@pytest.fixture(scope="session")
 def internal_lecture_material() -> InternalLectureMaterial:
     """Pytest fixture of InternalLectureMaterial.
     Creates InternalLectureMaterial from .lecture_materials/example_latex.tex.
@@ -47,10 +46,16 @@ def internal_lecture_material() -> InternalLectureMaterial:
     return material
 
 
+test_internal_lecture_material = internal_lecture_material()
+
+
 @pytest.fixture(scope="session")
 def material_filter(
     material_client: MaterialClient, markdown_converter: MarkdownConverter
 ) -> MaterialFilter:
+    material_client.path_dictionary_controller.load_file(
+        test_internal_lecture_material.local_path, test_internal_lecture_material.hash
+    )
     material_filter = MaterialFilter(material_client, markdown_converter)
     return material_filter
 
@@ -76,5 +81,6 @@ input_output_pairs[0][0].batches.append(
 
 
 @pytest.mark.parametrize("input, output", input_output_pairs)
-def test_run(material_filter: MaterialFilter, input: Any, output: Any) -> None:
-    result = material_filter.run(input)
+@pytest.mark.asyncio
+async def test_run(material_filter: MaterialFilter, input: Any, output: Any) -> None:
+    await material_filter.run(input)

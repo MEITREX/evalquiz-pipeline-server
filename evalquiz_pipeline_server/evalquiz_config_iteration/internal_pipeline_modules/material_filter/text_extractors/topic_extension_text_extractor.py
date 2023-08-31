@@ -42,15 +42,15 @@ class TopicExtensionTextExtractor(TextExtractor):
         truncated_keyword_sentences = self.sentences_to_max_token_length(
             keyword_sentences
         )
-        return " ".join(truncated_keyword_sentences)
+        return "/n".join(truncated_keyword_sentences)
 
     def find_sentences_with_keywords(
         self, sentences: list[str], keywords: list[str]
     ) -> list[str]:
         filtered_sentences: list[str] = []
-        for keyword in keywords:
-            for sentence in sentences:
-                if keyword in sentence:
+        for sentence in sentences:
+            for keyword in keywords:
+                if keyword in sentence and sentence not in filtered_sentences:
                     filtered_sentences.append(sentence)
                     break
         return filtered_sentences
