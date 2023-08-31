@@ -11,8 +11,14 @@ nltk.download("punkt")
 
 
 class TopicExtensionTextExtractor(TextExtractor):
-    def __init__(self, max_tokens: int, encode_function: Callable[[str], Any]):
+    def __init__(
+        self,
+        max_tokens: int,
+        encode_function: Callable[[str], Any],
+        max_keywords: Optional[int] = None,
+    ):
         super().__init__(max_tokens)
+        self.max_keywords = max_keywords
         self.encode_function = encode_function
 
     def extract_with_capabilites(
@@ -42,8 +48,8 @@ class TopicExtensionTextExtractor(TextExtractor):
         self, sentences: list[str], keywords: list[str]
     ) -> list[str]:
         filtered_sentences: list[str] = []
-        for sentence in sentences:
-            for keyword in keywords:
+        for keyword in keywords:
+            for sentence in sentences:
                 if keyword in sentence:
                     filtered_sentences.append(sentence)
                     break
@@ -63,7 +69,6 @@ class TopicExtensionTextExtractor(TextExtractor):
     def compose_keywords(
         self,
         most_similar_words_of_capabilites: dict[str, List[Tuple[str, float]]],
-        max_length: Optional[int] = None,
     ) -> List[str]:
         keywords: list[str] = []
         for serialized_capability in most_similar_words_of_capabilites.keys():
@@ -80,6 +85,6 @@ class TopicExtensionTextExtractor(TextExtractor):
             for probability_word_pair in ranked_similar_probability_word_pairs
         ]
         keywords.extend(ranked_similar_words)
-        if max_length is not None:
-            return keywords[: max_length - 1]
+        if self.max_keywords is not None:
+            return keywords[: self.max_keywords]
         return keywords
