@@ -1,4 +1,4 @@
-from typing import Any, Tuple
+from typing import Any
 import pytest
 from evalquiz_pipeline_server.pipeline_execution.exceptions import (
     PipelineModuleCompositionNotValidException,
@@ -42,8 +42,8 @@ split_merge_configurations = [
     "split_configurations, merge_configurations, expected", split_merge_configurations
 )
 def test_validate_implementation_for_pipeline(
-    split_configurations: Tuple[bool, bool, bool],
-    merge_configurations: Tuple[bool, bool, bool],
+    split_configurations: tuple[bool, bool, bool],
+    merge_configurations: tuple[bool, bool, bool],
     expected: bool,
 ) -> None:
     (a_split, b_split, c_split) = split_configurations

@@ -62,13 +62,15 @@ def delete_all_files_in_folder(folder_path: Path) -> None:
 
 
 def file_upload_cleanup(material_storage_path: Path) -> None:
-    """Deletes files that were uploaded for test purposes.
+    """Deletes files created during the test, if existent.
+    Deletes folder containing the files, if existent.
 
     Args:
         material_storage_path (Path): The path were the uploaded files are stored.
     """
     delete_all_files_in_folder(material_storage_path)
-    os.rmdir(material_storage_path)
+    if os.path.isdir(material_storage_path):
+        os.rmdir(material_storage_path)
 
 
 def test_convert_material(

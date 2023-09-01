@@ -2,6 +2,8 @@ services:
   app:
     build:
       context: .
+    secrets:
+      - openai_api_key
     links:
       - db
   db:
@@ -19,3 +21,6 @@ services:
         - ME_CONFIG_MONGODB_URL=mongodb://db:27017
 volumes:
   mongodb:
+secrets:
+  openai_api_key:
+    file: /tmp/openai_api_key.txt

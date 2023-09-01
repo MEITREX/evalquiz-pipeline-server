@@ -40,7 +40,7 @@ class TopicExtensionTextExtractor(TextExtractor):
         keywords = self.compose_keywords(most_similar_words_of_capabilites)
         keyword_sentences = self.find_sentences_with_keywords(sentences, keywords)
         truncated_keyword_sentences = self.sentences_to_max_token_length(
-            keyword_sentences
+            keyword_sentences, keywords
         )
         return "/n".join(truncated_keyword_sentences)
 
@@ -55,16 +55,26 @@ class TopicExtensionTextExtractor(TextExtractor):
                     break
         return filtered_sentences
 
-    def sentences_to_max_token_length(self, sentences: list[str]) -> list[str]:
+    def sentences_to_max_token_length(
+        self, sentences: list[str], keywords: list[str]
+    ) -> list[str]:
         tokens = 0
-        filtered_sentences: list[str] = []
-        for sentence in sentences:
-            encoded_sentence = self.encode_function(sentence)
-            tokens += len(encoded_sentence)
-            if tokens > self.max_tokens:
-                break
-            filtered_sentences.append(sentence)
-        return filtered_sentences
+        filtered_sentences: dict[int, str] = {}
+        for keyword in keywords:
+            for i, sentence in enumerate(sentences):
+                if keyword in sentence and sentence not in filtered_sentences.values():
+                    encoded_sentence = self.encode_function(sentence)
+                    tokens += len(encoded_sentence)
+                    if tokens > self.max_tokens:
+                        break
+                    filtered_sentences[i] = sentence
+        sorted_filtered_sentences = sorted(
+            filtered_sentences.items(), key=lambda x: x[0]
+        )
+        sorted_filtered_sentences_list = [
+            sentence for _, sentence in sorted_filtered_sentences
+        ]
+        return sorted_filtered_sentences_list
 
     def compose_keywords(
         self,

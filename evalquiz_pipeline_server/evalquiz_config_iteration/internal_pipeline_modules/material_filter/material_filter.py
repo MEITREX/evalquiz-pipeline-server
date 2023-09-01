@@ -29,7 +29,7 @@ class MaterialFilter(InternalPipelineModule):
         markdown_converter: MarkdownConverter = MarkdownConverter(),
     ) -> None:
         pipeline_module = PipelineModule(
-            "material_filter", "InternalConfig", "Tuple[InternalConfig, str]"
+            "material_filter", "InternalConfig", "tuple[InternalConfig, list[str]]"
         )
         super().__init__(pipeline_module)
         self.material_client = material_client
@@ -47,10 +47,13 @@ class MaterialFilter(InternalPipelineModule):
         text_extractor: TextExtractor = TopicExtensionTextExtractor(
             1000, encode_function.encode
         )
-        return [
-            await self.process_batch(batch, material_client, text_extractor)
-            for batch in input.batches
-        ]
+        return (
+            input,
+            [
+                await self.process_batch(batch, material_client, text_extractor)
+                for batch in input.batches
+            ],
+        )
 
     def resolve_model(self, internal_config: InternalConfig) -> str:
         if (

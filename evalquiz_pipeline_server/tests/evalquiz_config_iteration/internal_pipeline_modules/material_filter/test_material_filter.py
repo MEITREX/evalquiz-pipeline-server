@@ -29,7 +29,9 @@ from evalquiz_proto.shared.generated import (
 from evalquiz_proto.shared.internal_lecture_material import InternalLectureMaterial
 
 
-def internal_lecture_material() -> InternalLectureMaterial:
+def internal_lecture_material(
+    local_path: Path, file_type: str
+) -> InternalLectureMaterial:
     """Pytest fixture of InternalLectureMaterial.
     Creates InternalLectureMaterial from .lecture_materials/example_latex.tex.
 
@@ -37,16 +39,20 @@ def internal_lecture_material() -> InternalLectureMaterial:
         InternalLectureMaterial: _description_
     """
     material_metadata = LectureMaterial(
-        reference="Example latex", file_type="application/x-tex"
+        reference="Example material", file_type=file_type
     )
-    material_storage_path = (
-        Path(__file__).parent / "lecture_materials/example_latex.tex"
-    )
+    material_storage_path = local_path
     material = InternalLectureMaterial(material_storage_path, material_metadata)
     return material
 
 
-test_internal_lecture_material = internal_lecture_material()
+example_latex_internal_lecture_material = internal_lecture_material(
+    Path(__file__).parent / "lecture_materials/example_latex.tex", "application/x-tex"
+)
+
+selection_sort_wiki_internal_lecture_material = internal_lecture_material(
+    Path(__file__).parent / "lecture_materials/selection_sort_wiki.html", "text/html"
+)
 
 
 @pytest.fixture(scope="session")
@@ -54,7 +60,12 @@ def material_filter(
     material_client: MaterialClient, markdown_converter: MarkdownConverter
 ) -> MaterialFilter:
     material_client.path_dictionary_controller.load_file(
-        test_internal_lecture_material.local_path, test_internal_lecture_material.hash
+        example_latex_internal_lecture_material.local_path,
+        example_latex_internal_lecture_material.hash,
+    )
+    material_client.path_dictionary_controller.load_file(
+        selection_sort_wiki_internal_lecture_material.local_path,
+        selection_sort_wiki_internal_lecture_material.hash,
     )
     material_filter = MaterialFilter(material_client, markdown_converter)
     return material_filter
@@ -62,12 +73,12 @@ def material_filter(
 
 input_output_pairs = [
     (default_internal_config, (default_internal_config, ""))
-    for default_internal_config in [DefaultInternalConfig() for _ in range(1)]
+    for default_internal_config in [DefaultInternalConfig() for _ in range(2)]
 ]
 
 input_output_pairs[0][0].batches.append(
     Batch(
-        [internal_lecture_material()],
+        [example_latex_internal_lecture_material],
         [],
         [
             Capability(
@@ -79,8 +90,27 @@ input_output_pairs[0][0].batches.append(
     )
 )
 
+input_output_pairs[1][0].batches.append(
+    Batch(
+        [selection_sort_wiki_internal_lecture_material],
+        [],
+        [
+            Capability(
+                ["complexity"],
+                EducationalObjective.KNOW_AND_UNDERSTAND,
+                Relationship.COMPLEX,
+            )
+        ],
+    )
+)
+
 
 @pytest.mark.parametrize("input, output", input_output_pairs)
 @pytest.mark.asyncio
-async def test_run(material_filter: MaterialFilter, input: Any, output: Any) -> None:
-    await material_filter.run(input)
+async def test_run(
+    material_filter: MaterialFilter,
+    input: DefaultInternalConfig,
+    output: tuple[DefaultInternalConfig, str],
+) -> None:
+    (_, result) = await material_filter.run(input)
+    assert input.batches[0].capabilites[0].keywords[0] in result[0]

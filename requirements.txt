@@ -16,3 +16,4 @@ pymongo
 gensim
 nltk
 tiktoken
+openai

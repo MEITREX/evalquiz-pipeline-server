@@ -9,7 +9,7 @@ class QuestionSpecificationMerge(InternalPipelineModule):
     def __init__(self) -> None:
         pipeline_module = PipelineModule(
             "question_specification_merge",
-            "Tuple[InternalConfig, str]",
+            "tuple[InternalConfig, list[str]]",
             "InternalConfig",
         )
         super().__init__(pipeline_module)
