@@ -10,6 +10,7 @@ from evalquiz_pipeline_server.pipeline_execution.internal_pipeline_module import
 )
 from evalquiz_proto.shared.generated import (
     Batch,
+    CourseSettings,
     GenerationSettings,
     InternalConfig,
     PipelineModule,
@@ -39,8 +40,9 @@ class QuestionGeneration(InternalPipelineModule):
         (internal_config, filtered_texts) = cast(
             tuple[InternalConfig, list[str]], input
         )
+        course_settings = self.resolve_course_settings(internal_config)
         generation_settings = self.resolve_generation_settings(internal_config)
-        message_composer = MessageComposer(generation_settings)
+        message_composer = MessageComposer(course_settings, generation_settings)
         return (
             internal_config,
             [
@@ -59,10 +61,33 @@ class QuestionGeneration(InternalPipelineModule):
         else:
             raise ValueError("DefaultInternalConfig not specified correctly.")
 
+    def resolve_course_settings(
+        self, internal_config: InternalConfig
+    ) -> CourseSettings:
+        if internal_config.course_settings is not None:
+            return internal_config.course_settings
+        elif self.default_internal_config.course_settings is not None:
+            return self.default_internal_config.course_settings
+        else:
+            raise ValueError("DefaultInternalConfig not specified correctly.")
+
     def process_batch(
-        self, batch: Batch, filtered_text: str, message_composer: MessageComposer
-    ) -> str:
-        messages = message_composer.compose(batch, filtered_text)
-        completion = openai.ChatCompletion.create(deployment_id="EvalQuiz-GPT4", model="gpt-4", messages=messages)
-        message_content = completion["choices"][0]["message"]["content"]
-        return message_content
+        self,
+        batch: Batch,
+        filtered_text: str,
+        message_composer: MessageComposer,
+    ) -> list[str]:
+        message_contents: list[str] = []
+        previous_messages: list[dict[str, str]] = []
+        for question in batch.question_to_generate:
+            messages = message_composer.compose(
+                question,
+                batch.capabilites,
+                filtered_text,
+                previous_messages,
+            )
+            completion = openai.ChatCompletion.create(
+                deployment_id="EvalQuiz-GPT4", model="gpt-4", messages=messages
+            )
+            message_contents.append(completion["choices"][0]["message"]["content"])
+        return message_contents

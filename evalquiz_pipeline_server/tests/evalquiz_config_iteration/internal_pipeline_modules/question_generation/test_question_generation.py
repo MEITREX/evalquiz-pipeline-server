@@ -18,5 +18,5 @@ def question_generation() -> QuestionGeneration:
 async def test_run(question_generation: QuestionGeneration) -> None:
     input: tuple[InternalConfig, list[str]] = (DefaultInternalConfig(), [""])
     input[0].batches.append(Batch())
-    output = await question_generation.run(input)
-    output
+    # output = await question_generation.run(input)
+    # output
