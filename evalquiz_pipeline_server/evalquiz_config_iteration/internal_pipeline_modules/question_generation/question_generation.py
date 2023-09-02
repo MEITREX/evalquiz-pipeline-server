@@ -89,5 +89,6 @@ class QuestionGeneration(InternalPipelineModule):
             completion = openai.ChatCompletion.create(
                 deployment_id="EvalQuiz-GPT4", model="gpt-4", messages=messages
             )
-            message_contents.append(completion["choices"][0]["message"]["content"])
+            result = completion["choices"][0]["message"]["content"]
+            message_contents.append(result)
         return message_contents
