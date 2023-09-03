@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Any
 import pytest
 from evalquiz_pipeline_server.evalquiz_config_iteration.default_internal_config import (
     DefaultInternalConfig,

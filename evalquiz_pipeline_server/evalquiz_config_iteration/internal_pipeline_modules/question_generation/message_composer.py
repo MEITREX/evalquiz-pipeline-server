@@ -1,4 +1,7 @@
-from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_generation.question_type_composer.multiple_choice_composer import (
+from collections import defaultdict
+import os
+from pathlib import Path
+from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_generation.question_type_composer.multiple_choice_composer.multiple_choice_composer import (
     MultipleChoiceComposer,
 )
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_generation.question_type_composer.multiple_response_composer import (
@@ -55,14 +58,12 @@ class MessageComposer:
         previous_messages: list[dict[str, str]],
     ) -> list[dict[str, str]]:
         return (
-            [self.compose_system_message(question, capabilites)]
+            [self.compose_system_message(capabilites)]
             + self.compose_few_shot_examples(question, previous_messages)
             + [self.compose_query_message(question, filtered_text)]
         )
 
-    def compose_system_message(
-        self, question: Question, capabilites: list[Capability]
-    ) -> dict[str, str]:
+    def compose_system_message(self, capabilites: list[Capability]) -> dict[str, str]:
         return {
             "role": "system",
             "content": """You are a question generation assistant that supports generating questions in multiple fixed formats.
@@ -85,13 +86,29 @@ You can assume that the student already has acquired the following skills:
         self, question: Question, previous_messages: list[dict[str, str]]
     ) -> list[dict[str, str]]:
         max_previous_messages_and_responses = self.max_previous_messages * 2
-        question_type_few_shot_examples = self.question_type_composers[
+        few_shot_example_path = self.question_type_composers[
             question.question_type
-        ].compose_few_shot_examples()
-        return (
-            previous_messages[:max_previous_messages_and_responses]
-            + question_type_few_shot_examples
+        ].few_shot_example_path
+        return previous_messages[
+            :max_previous_messages_and_responses
+        ] + self._compose_few_shot_examples(question, few_shot_example_path)
+
+    def _compose_few_shot_examples(
+        self, question: Question, few_shot_example_path: Path
+    ) -> list[dict[str, str]]:
+        few_shot_examples: list[dict[str, str]] = []
+        few_shot_example_sources = self.load_few_shot_example_sources(
+            few_shot_example_path
         )
+        for example_source in few_shot_example_sources:
+            user_example = example_source["user"]
+            assistant_example = example_source["assistant"]
+            user_example_message = self.compose_query_message(question, user_example)
+            few_shot_examples.append(user_example_message)
+            few_shot_examples.append(
+                {"role": "assistant", "content": assistant_example}
+            )
+        return few_shot_examples
 
     def compose_query_message(
         self, question: Question, filtered_text: str
@@ -100,9 +117,14 @@ You can assume that the student already has acquired the following skills:
         question_type_query_message = question_type_composer.compose_query_message()
         content = (
             """Your goal is to use the given markdown formatted text input to generate a question of the following JSON format:
+
+```md
 """
             + filtered_text
-            + """Give your answer in the specified JSON format at all cost!
+            + """
+```
+
+Give your answer in the specified JSON format at all cost!
 
 Markdown formatted text input:
 """
@@ -146,3 +168,37 @@ Markdown formatted text input:
             )
         objective_explanations_message += "\n"
         return objective_explanations_message
+
+    def load_few_shot_example_sources(
+        self, few_shot_example_path: Path
+    ) -> list[defaultdict[str, str]]:
+        few_shot_example_sources: defaultdict[int, defaultdict[str, str]] = defaultdict(
+            defaultdict
+        )
+        for raw_filename in os.listdir(few_shot_example_path):
+            filename = os.fsdecode(raw_filename)
+            if filename.startswith("user_"):
+                index = int(filename[-1])
+                local_path = few_shot_example_path / raw_filename
+                with open(local_path, "r") as open_file:
+                    few_shot_example_sources[index]["user"] = open_file.read()
+            elif filename.startswith("assistant_"):
+                index = int(filename[-1])
+                local_path = few_shot_example_path / raw_filename
+                with open(local_path, "r") as open_file:
+                    few_shot_example_sources[index]["assistant"] = open_file.read()
+        sorted_filtered_few_shot_example_sources = (
+            self.collect_few_shot_example_sources(few_shot_example_sources)
+        )
+        return sorted_filtered_few_shot_example_sources
+
+    def collect_few_shot_example_sources(
+        self, few_shot_example_sources: defaultdict[int, defaultdict[str, str]]
+    ) -> list[defaultdict[str, str]]:
+        sorted_few_shot_example_sources = sorted(
+            few_shot_example_sources.items(), key=lambda x: x[0]
+        )
+        sorted_filtered_few_shot_example_sources = [
+            example_source for _, example_source in sorted_few_shot_example_sources
+        ]
+        return sorted_filtered_few_shot_example_sources

@@ -1,21 +1,23 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
 import betterproto
-from evalquiz_proto.shared.generated import PipelineModule, Question, QuestionType
-
+from evalquiz_proto.shared.generated import PipelineModule, QuestionType
 
 class QuestionTypeComposer(PipelineModule, ABC):
     """Specific instructions to give according to a QuestionType."""
 
-    def __init__(self, question_type: QuestionType, question: betterproto.Message):
+    def __init__(
+        self,
+        question_type: QuestionType,
+        question: betterproto.Message,
+        few_shot_example_path: Path,
+    ):
         self.question_type = question_type
         self.question = question
+        self.few_shot_example_path = few_shot_example_path
 
     @abstractmethod
     def compose_query_message(self) -> str:
-        pass
-
-    @abstractmethod
-    def compose_few_shot_examples(self) -> list[dict[str, str]]:
         pass
 
     def result_template(self) -> str:

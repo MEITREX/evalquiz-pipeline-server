@@ -1,3 +1,4 @@
+from pathlib import Path
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_generation.question_type_composer.question_type_composer import (
     QuestionTypeComposer,
 )
@@ -14,6 +15,7 @@ class MultipleChoiceComposer(QuestionTypeComposer):
                 "ANSWER_TEXT",
                 ["DISTRACTOR_TEXT_1", "DISTRACTOR_TEXT_2"],
             ),
+            Path(__file__).parent / "few_shot_examples",
         )
 
     def compose_query_message(self) -> str:
@@ -23,11 +25,3 @@ class MultipleChoiceComposer(QuestionTypeComposer):
 ANSWER_TEXT the only valid answer to the question. And DISTRACTOR_TEXT_1, DISTRACTOR_TEXT_2 answer options that are false.
 """
         )
-
-    def compose_few_shot_examples(self) -> list[dict[str, str]]:
-        return [
-            {"role": "user", "content": ""},
-            {"role": "system", "content": ""},
-            {"role": "user", "content": ""},
-            {"role": "system", "content": ""},
-        ]

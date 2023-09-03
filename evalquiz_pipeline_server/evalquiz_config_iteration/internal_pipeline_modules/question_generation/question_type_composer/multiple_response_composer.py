@@ -1,3 +1,4 @@
+from pathlib import Path
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_generation.question_type_composer.question_type_composer import (
     QuestionTypeComposer,
 )
@@ -14,10 +15,8 @@ class MultipleResponseComposer(QuestionTypeComposer):
                 ["ANSWER_TEXT_1", "ANSWER_TEXT_2"],
                 ["DISTRACTOR_TEXT_1", "DISTRACTOR_TEXT_2"],
             ),
+            Path(__file__).parent / "few_shot_examples",
         )
 
     def compose_query_message(self) -> str:
-        raise NotImplementedError()
-
-    def compose_few_shot_examples(self) -> list[dict[str, str]]:
         raise NotImplementedError()
