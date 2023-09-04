@@ -57,6 +57,15 @@ selection_sort_wiki_internal_lecture_material = internal_lecture_material(
     Path(__file__).parent / "lecture_materials/selection_sort_wiki.html", "text/html"
 )
 
+testdoc_1_internal_lecture_material = internal_lecture_material(
+    Path(__file__).parent / "lecture_materials/testdoc_1.md", "text/markdown"
+)
+
+pse_vu9_vererbung_internal_lecture_material = internal_lecture_material(
+    Path(__file__).parent / "lecture_materials/pse_vu9_vererbung.pptx",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+)
+
 
 @pytest.fixture(scope="session")
 def material_filter(
@@ -70,11 +79,19 @@ def material_filter(
         selection_sort_wiki_internal_lecture_material.local_path,
         selection_sort_wiki_internal_lecture_material.hash,
     )
+    material_client.path_dictionary_controller.load_file(
+        testdoc_1_internal_lecture_material.local_path,
+        testdoc_1_internal_lecture_material.hash,
+    )
+    material_client.path_dictionary_controller.load_file(
+        pse_vu9_vererbung_internal_lecture_material.local_path,
+        pse_vu9_vererbung_internal_lecture_material.hash,
+    )
     material_filter = MaterialFilter(material_client, markdown_converter)
     return material_filter
 
 
-inputs = [DefaultInternalConfig() for _ in range(2)]
+inputs = [DefaultInternalConfig() for _ in range(4)]
 
 inputs[0].batches.append(
     Batch(
@@ -97,6 +114,34 @@ inputs[1].batches.append(
         [
             Capability(
                 ["complexity"],
+                EducationalObjective.KNOW_AND_UNDERSTAND,
+                Relationship.COMPLEX,
+            )
+        ],
+    )
+)
+
+inputs[2].batches.append(
+    Batch(
+        [testdoc_1_internal_lecture_material],
+        [],
+        [
+            Capability(
+                ["entrypoint"],
+                EducationalObjective.KNOW_AND_UNDERSTAND,
+                Relationship.DIFFERENCES,
+            )
+        ],
+    )
+)
+
+inputs[3].batches.append(
+    Batch(
+        [pse_vu9_vererbung_internal_lecture_material],
+        [],
+        [
+            Capability(
+                ["extends", "abstract"],
                 EducationalObjective.KNOW_AND_UNDERSTAND,
                 Relationship.COMPLEX,
             )

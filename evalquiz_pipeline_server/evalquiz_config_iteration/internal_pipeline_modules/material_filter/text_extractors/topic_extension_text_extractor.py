@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Tuple, Callable
+from typing import Any, Optional, Callable
 import random
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.material_filter.text_extractors.text_extractor import (
     TextExtractor,
@@ -6,6 +6,7 @@ from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_module
 from evalquiz_proto.shared.generated import Capability
 import gensim
 import nltk
+import pypandoc
 
 nltk.download("punkt")
 
@@ -22,12 +23,34 @@ class TopicExtensionTextExtractor(TextExtractor):
         self.encode_function = encode_function
 
     def extract_with_capabilites(
-        self, texts: List[str], capabilites: List[Capability]
+        self, texts: list[str], capabilites: list[Capability]
     ) -> str:
         random.shuffle(texts)
-        preprocessed_texts = [gensim.utils.simple_preprocess(text) for text in texts]
+        preprocessed_texts = self.preprocess_texts(texts)
         model = gensim.models.Word2Vec(preprocessed_texts, min_count=1)
-        most_similar_words_of_capabilites: dict[str, List[Tuple[str, float]]] = {}
+        most_similar_words_of_capabilites = (
+            self.find_most_similar_words_of_capabilities(model, capabilites)
+        )
+        sentences = nltk.sent_tokenize(" ".join(texts))
+        keywords = self.compose_keywords(most_similar_words_of_capabilites)
+        keyword_sentences = self.find_sentences_with_keywords(sentences, keywords)
+        truncated_keyword_sentences = self.sentences_to_max_token_length(
+            keyword_sentences, keywords
+        )
+        return "\n".join(truncated_keyword_sentences)
+    
+    def preprocess_texts(self, texts: list[str]) -> list[str]:
+        plain_texts = [
+            pypandoc.convert_text(text, "plain", format="markdown") for text in texts
+        ]
+        return [
+            gensim.utils.simple_preprocess(plain_text) for plain_text in plain_texts
+        ]
+
+    def find_most_similar_words_of_capabilities(
+        self, model: Any, capabilites: list[Capability]
+    ) -> dict[str, list[tuple[str, float]]]:
+        most_similar_words_of_capabilites: dict[str, list[tuple[str, float]]] = {}
         for capability in capabilites:
             most_similar_words = model.wv.most_similar(
                 positive=capability.keywords, topn=5
@@ -36,13 +59,7 @@ class TopicExtensionTextExtractor(TextExtractor):
             most_similar_words_of_capabilites[
                 serialized_capability
             ] = most_similar_words
-        sentences = nltk.sent_tokenize(" ".join(texts))
-        keywords = self.compose_keywords(most_similar_words_of_capabilites)
-        keyword_sentences = self.find_sentences_with_keywords(sentences, keywords)
-        truncated_keyword_sentences = self.sentences_to_max_token_length(
-            keyword_sentences, keywords
-        )
-        return "/n".join(truncated_keyword_sentences)
+        return most_similar_words_of_capabilites
 
     def find_sentences_with_keywords(
         self, sentences: list[str], keywords: list[str]
@@ -78,13 +95,13 @@ class TopicExtensionTextExtractor(TextExtractor):
 
     def compose_keywords(
         self,
-        most_similar_words_of_capabilites: dict[str, List[Tuple[str, float]]],
-    ) -> List[str]:
+        most_similar_words_of_capabilites: dict[str, list[tuple[str, float]]],
+    ) -> list[str]:
         keywords: list[str] = []
         for serialized_capability in most_similar_words_of_capabilites.keys():
             capability = Capability().from_json(serialized_capability)
             keywords.extend(capability.keywords)
-        ranked_similar_probability_word_pairs: List[Tuple[str, float]] = []
+        ranked_similar_probability_word_pairs: list[tuple[str, float]] = []
         for probability_word_pairs in most_similar_words_of_capabilites.values():
             ranked_similar_probability_word_pairs.extend(probability_word_pairs)
         ranked_similar_probability_word_pairs.sort(

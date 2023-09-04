@@ -33,10 +33,10 @@ from evalquiz_pipeline_server.tests.evalquiz_config_iteration.internal_pipeline_
     markdown_converter,
 )
 
-#example_pptx_lecture_material = internal_lecture_material(
+# example_pptx_lecture_material = internal_lecture_material(
 #    Path(__file__).parent / "~/Downloads",
 #    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-#)
+# )
 
 
 @pytest.fixture(scope="session")
@@ -49,9 +49,9 @@ def internal_config() -> InternalConfig:
 def material_filter(
     material_client: MaterialClient, markdown_converter: MarkdownConverter
 ) -> MaterialFilter:
-    #material_client.path_dictionary_controller.load_file(
+    # material_client.path_dictionary_controller.load_file(
     #    example_pptx_lecture_material.local_path, example_pptx_lecture_material.hash
-    #)
+    # )
     material_filter = MaterialFilter(material_client, markdown_converter)
     return material_filter
 
@@ -67,12 +67,12 @@ async def test_material_filter_and_question_generation_pipeline_execution(
     pipeline = ConfigIterationPipeline()
     pipeline.pipeline_modules = [material_filter, pipeline.pipeline_modules[1]]
     pipeline_execution = PipelineExecution(input, pipeline)
-    #pipeline_status_iterator = pipeline_execution.run()
-    #pipeline_statuses: list[PipelineStatus] = []
-    #while True:
+    # pipeline_status_iterator = pipeline_execution.run()
+    # pipeline_statuses: list[PipelineStatus] = []
+    # while True:
     #    try:
     #        pipeline_status = await pipeline_status_iterator.__anext__()
     #        pipeline_statuses.append(pipeline_status)
     #    except StopAsyncIteration:
     #        break
-    #pass
+    # pass

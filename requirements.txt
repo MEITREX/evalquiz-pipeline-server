@@ -17,4 +17,5 @@ gensim
 nltk
 tiktoken
 openai
-py2puml
+pptx2md
+pypandoc_binary

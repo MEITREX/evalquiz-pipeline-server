@@ -17,12 +17,31 @@ def internal_lecture_material() -> InternalLectureMaterial:
     Creates InternalLectureMaterial from .lecture_materials/example.html.
 
     Returns:
-        InternalLectureMaterial: _description_
+        InternalLectureMaterial
     """
     material_metadata = LectureMaterial(
         reference="Example textfile", file_type="text/html"
     )
     material_storage_path = Path(__file__).parent / "lecture_materials/example.html"
+    material = InternalLectureMaterial(material_storage_path, material_metadata)
+    return material
+
+
+@pytest.fixture(scope="session")
+def internal_lecture_material_pptx() -> InternalLectureMaterial:
+    """Pytest fixture of InternalLectureMaterial.
+    Creates InternalLectureMaterial from .lecture_materials/pse_vu9_vererbung.pptx.
+
+    Returns:
+        InternalLectureMaterial
+    """
+    material_metadata = LectureMaterial(
+        reference="Example textfile",
+        file_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    )
+    material_storage_path = (
+        Path(__file__).parent / "lecture_materials/pse_vu9_vererbung.pptx"
+    )
     material = InternalLectureMaterial(material_storage_path, material_metadata)
     return material
 
@@ -54,7 +73,7 @@ def delete_all_files_in_folder(folder_path: Path) -> None:
     """Deletes all files in a folder, non-recursive.
 
     Args:
-        folder_path (Path): Path to the folder.
+        folder_path (Path): Path to the folder which should contain no sub-folders.
     """
     files = glob.glob(str(folder_path / "*"))
     for local_file in files:
@@ -77,12 +96,40 @@ def test_convert_material(
     internal_lecture_material: InternalLectureMaterial,
     markdown_converter: MarkdownConverter,
 ) -> None:
+    """Tests the conversion from a HTML internal lecture material a markdown lecture material,
+    saved in the PathDictionaryController of the MarkdownConverter.
+
+    Args:
+        internal_lecture_material (InternalLectureMaterial): HTML internal lecture material.
+        markdown_converter (MarkdownConverter): Converts arbitrary internal lecture material to markdown lecture material.
+    """
     assert internal_lecture_material.file_type == "text/html"
     internal_lecture_material_md = markdown_converter.convert_material(
         internal_lecture_material
     )
     assert internal_lecture_material_md.file_type == "text/markdown"
     path_stem = internal_lecture_material.local_path.stem
+    assert markdown_converter.path_dictionary_controller.get_file_path_from_hash(
+        internal_lecture_material_md.hash
+    ) == markdown_converter.material_storage_path / (path_stem + ".md")
+
+
+def test_convert_pptx_material(
+    internal_lecture_material_pptx: InternalLectureMaterial,
+    markdown_converter: MarkdownConverter,
+) -> None:
+    """Tests the conversion from a .pptx internal lecture material a markdown lecture material,
+    saved in the PathDictionaryController of the MarkdownConverter.
+
+    Args:
+        internal_lecture_material (InternalLectureMaterial): .pptx internal lecture material.
+        markdown_converter (MarkdownConverter): Converts arbitrary internal lecture material to markdown lecture material.
+    """
+    internal_lecture_material_md = markdown_converter.convert_material(
+        internal_lecture_material_pptx
+    )
+    assert internal_lecture_material_md.file_type == "text/markdown"
+    path_stem = internal_lecture_material_pptx.local_path.stem
     assert markdown_converter.path_dictionary_controller.get_file_path_from_hash(
         internal_lecture_material_md.hash
     ) == markdown_converter.material_storage_path / (path_stem + ".md")
