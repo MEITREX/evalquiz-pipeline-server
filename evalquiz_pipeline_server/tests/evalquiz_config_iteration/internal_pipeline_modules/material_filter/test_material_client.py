@@ -5,6 +5,8 @@ import pytest
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.material_filter.material_client import (
     MaterialClient,
 )
+
+# Imported fixture, linter warning is wrong
 from evalquiz_pipeline_server.tests.evalquiz_config_iteration.internal_pipeline_modules.material_filter.test_markdown_converter import (
     file_upload_cleanup,
     internal_lecture_material,

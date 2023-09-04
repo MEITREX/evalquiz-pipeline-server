@@ -8,7 +8,7 @@ from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_module
 from evalquiz_proto.shared.generated import Batch, InternalConfig
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def question_generation() -> QuestionGeneration:
     question_generation = QuestionGeneration()
     return question_generation

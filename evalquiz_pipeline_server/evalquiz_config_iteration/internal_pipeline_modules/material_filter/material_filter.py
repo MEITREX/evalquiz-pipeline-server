@@ -112,7 +112,7 @@ class MaterialFilter(InternalPipelineModule):
         contents: List[str] = []
         for internal_lecture_material in internal_lecture_materials:
             local_path = internal_lecture_material.local_path
-            with open(local_path, "rU") as local_file:
+            with open(local_path, "r") as local_file:
                 content = local_file.read()
                 contents.append(content)
         return contents

@@ -13,7 +13,7 @@ from evalquiz_proto.shared.generated import (
 )
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def message_composer() -> MessageComposer:
     required_capabilites = [
         Capability(
@@ -50,4 +50,4 @@ def test_compose_few_shot_examples(message_composer: MessageComposer) -> None:
     )
     assert len(few_shot_examples) % 2 == 0
     assert few_shot_examples[0]["role"] == "user"
-    assert few_shot_examples[0]["role"] == "assistant"
+    assert few_shot_examples[1]["role"] == "assistant"

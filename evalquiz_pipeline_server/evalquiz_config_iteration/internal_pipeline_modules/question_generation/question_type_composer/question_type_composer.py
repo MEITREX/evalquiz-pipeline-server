@@ -3,6 +3,7 @@ from pathlib import Path
 import betterproto
 from evalquiz_proto.shared.generated import PipelineModule, QuestionType
 
+
 class QuestionTypeComposer(PipelineModule, ABC):
     """Specific instructions to give according to a QuestionType."""
 

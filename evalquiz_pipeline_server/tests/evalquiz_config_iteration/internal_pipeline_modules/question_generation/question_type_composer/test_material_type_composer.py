@@ -4,7 +4,7 @@ from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_module
 )
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def multiple_choice_composer() -> MultipleChoiceComposer:
     return MultipleChoiceComposer()
 

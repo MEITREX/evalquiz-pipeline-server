@@ -1,6 +1,8 @@
 from collections import defaultdict
 import os
 from pathlib import Path
+
+import tiktoken
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_generation.question_type_composer.multiple_choice_composer.multiple_choice_composer import (
     MultipleChoiceComposer,
 )
@@ -36,12 +38,12 @@ class MessageComposer:
             QuestionType.MULTIPLE_RESPONSE: MultipleResponseComposer(),
         }
         self.educational_objective_explanations: dict[EducationalObjective, str] = {
-            EducationalObjective.KNOW_AND_UNDERSTAND: "Know and understand",
-            EducationalObjective.APPLY: "Apply",
-            EducationalObjective.ANALYZE: "Analyze",
-            EducationalObjective.SYNTHESIZE: "Synthesize",
-            EducationalObjective.EVALUATE: "Evaluate",
-            EducationalObjective.INNOVATE: "Innovate",
+            EducationalObjective.KNOW_AND_UNDERSTAND: "The student knows and understands the specific concepts.",
+            EducationalObjective.APPLY: "The student can apply the specific concepts to examples. Can name examples containing the specific concepts.",
+            EducationalObjective.ANALYZE: "The student can analyze settings which contains the specific concepts and identify where these concepts play a role in order to understand the system.",
+            EducationalObjective.SYNTHESIZE: "The student can synthesize the specific concepts.",
+            EducationalObjective.EVALUATE: "The student can carry out a scientific evaluation of a scenario connected with the specific concepts.",
+            EducationalObjective.INNOVATE: "The student can use the specific concepts as a basis to synthesize valuable new concepts.",
         }
         self.relationship_translations: dict[Relationship, str] = {
             Relationship.SIMILARITY: "the similarities between",
@@ -49,6 +51,7 @@ class MessageComposer:
             Relationship.ORDER: "the order of",
             Relationship.COMPLEX: "the complex relationship between",
         }
+        self.token_overhead
 
     def compose(
         self,
@@ -202,3 +205,30 @@ Markdown formatted text input:
             example_source for _, example_source in sorted_few_shot_example_sources
         ]
         return sorted_filtered_few_shot_example_sources
+
+    @property
+    def token_overhead(self) -> int:
+        messages = self.compose(Question(QuestionType.MULTIPLE_CHOICE), [], "", [])
+        return self.num_tokens_from_messages(messages)
+
+    def num_tokens_from_messages(
+        self, messages: list[dict[str, str]], model: str = "gpt-3.5-turbo-0301"
+    ) -> int:
+        """Source: https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/chatgpt?pivots=programming-language-chat-completions, Accessed: 03.09.2023
+        Returns the number of tokens used by a list of messages."""
+        try:
+            encoding = tiktoken.encoding_for_model(model)
+        except KeyError:
+            encoding = tiktoken.get_encoding("cl100k_base")
+        if model == "gpt-3.5-turbo-0301":  # note: future models may deviate from this
+            num_tokens = 0
+            for message in messages:
+                num_tokens += 4  # every message follows <im_start>{role/name}\n{content}<im_end>\n
+                for key, value in message.items():
+                    num_tokens += len(encoding.encode(value))
+                    if key == "name":  # if there's a name, the role is omitted
+                        num_tokens += -1  # role is always required and always 1 token
+            num_tokens += 2  # every reply is primed with <im_start>assistant
+            return num_tokens
+        else:
+            raise NotImplementedError()

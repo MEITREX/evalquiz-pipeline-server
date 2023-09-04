@@ -12,9 +12,13 @@ from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_module
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.material_filter.material_filter import (
     MaterialFilter,
 )
+
+# Imported fixture, linter warning is wrong
 from evalquiz_pipeline_server.tests.evalquiz_config_iteration.internal_pipeline_modules.material_filter.test_material_client import (
     material_client,
 )
+
+# Imported fixture, linter warning is wrong
 from evalquiz_pipeline_server.tests.evalquiz_config_iteration.internal_pipeline_modules.material_filter.test_markdown_converter import (
     markdown_converter,
 )
@@ -70,12 +74,9 @@ def material_filter(
     return material_filter
 
 
-input_output_pairs = [
-    (default_internal_config, (default_internal_config, ""))
-    for default_internal_config in [DefaultInternalConfig() for _ in range(2)]
-]
+inputs = [DefaultInternalConfig() for _ in range(2)]
 
-input_output_pairs[0][0].batches.append(
+inputs[0].batches.append(
     Batch(
         [example_latex_internal_lecture_material],
         [],
@@ -89,7 +90,7 @@ input_output_pairs[0][0].batches.append(
     )
 )
 
-input_output_pairs[1][0].batches.append(
+inputs[1].batches.append(
     Batch(
         [selection_sort_wiki_internal_lecture_material],
         [],
@@ -104,12 +105,11 @@ input_output_pairs[1][0].batches.append(
 )
 
 
-@pytest.mark.parametrize("input, output", input_output_pairs)
+@pytest.mark.parametrize("input", inputs)
 @pytest.mark.asyncio
 async def test_run(
     material_filter: MaterialFilter,
     input: DefaultInternalConfig,
-    output: tuple[DefaultInternalConfig, str],
 ) -> None:
     (_, result) = await material_filter.run(input)
     assert input.batches[0].capabilites[0].keywords[0] in result[0]

@@ -24,7 +24,6 @@ class ConfigIterationPipeline(Pipeline):
         pipeline_modules = [
             MaterialFilter(),
             QuestionGeneration(),
-            QuestionSpecificationMerge(),
             QuestionEvaluation(),
             QuestionDrop(),
         ]
