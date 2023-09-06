@@ -1,6 +1,8 @@
 import re
 import time
-from typing import Any, Optional, cast
+from typing import Any, Callable, Optional, cast
+
+import betterproto
 from evalquiz_pipeline_server.evalquiz_config_iteration.default_internal_config import (
     DefaultInternalConfig,
 )
@@ -23,8 +25,10 @@ from evalquiz_proto.shared.generated import (
     MultipleChoice,
     MultipleResponse,
     PipelineModule,
+    Question,
     QuestionType,
     Result,
+    Mode,
 )
 import openai
 
@@ -48,6 +52,18 @@ class QuestionGeneration(InternalPipelineModule):
         self.max_requests = max_request
         self.api_request_timeout = api_request_timeout
         self.default_internal_config = DefaultInternalConfig()
+        self.metric_evaluators: dict[str, Callable[[Any, Any], Any]] = {
+            "eq": lambda x, y: x == y,
+            "neq": lambda x, y: x != y,
+            "geq": lambda x, y: x >= y,
+            "leq": lambda x, y: x <= y,
+            "ge": lambda x, y: x > y,
+            "le": lambda x, y: x < y,
+            "is": lambda x, y: x is y,
+            "is not": lambda x, y: x is not y,
+            "contains": lambda x, y: x.contains(y),
+            "is_contained": lambda x, y: y.contains(x),
+        }
 
     async def run(self, input: Any) -> Any:
         (internal_config, filtered_texts) = cast(
@@ -56,9 +72,10 @@ class QuestionGeneration(InternalPipelineModule):
         course_settings = self.resolve_course_settings(internal_config)
         generation_settings = self.resolve_generation_settings(internal_config)
         model = self.resolve_model(internal_config)
+        mode = self.resolve_mode(internal_config)
         message_composer = MessageComposer(course_settings, generation_settings)
         for batch, filtered_text in zip(internal_config.batches, filtered_texts):
-            self.process_batch(batch, filtered_text, message_composer, model)
+            self.process_batch(batch, filtered_text, message_composer, model, mode)
         return internal_config
 
     def resolve_generation_settings(
@@ -95,23 +112,64 @@ class QuestionGeneration(InternalPipelineModule):
         else:
             raise ValueError("DefaultInternalConfig not specified correctly.")
 
+    def resolve_mode(self, internal_config: InternalConfig) -> Mode:
+        if (
+            internal_config.generation_settings is not None
+            and internal_config.generation_settings.mode is not None
+        ):
+            return internal_config.generation_settings.mode
+        elif (
+            self.default_internal_config.generation_settings is not None
+            and self.default_internal_config.generation_settings.mode is not None
+        ):
+            return self.default_internal_config.generation_settings.mode
+        else:
+            raise ValueError("DefaultInternalConfig not specified correctly.")
+
     def process_batch(
         self,
         batch: Batch,
         filtered_text: str,
         message_composer: MessageComposer,
         model: str,
+        mode: Mode,
     ) -> None:
         previous_messages: list[dict[str, str]] = []
         for question in batch.question_to_generate:
-            messages = message_composer.compose(
-                question,
-                batch.capabilites,
-                filtered_text,
-                previous_messages,
-            )
-            result = self.request_result(question.question_type, messages, model)
-            question.result = result
+            if self.is_question_to_generate(question, mode):
+                messages = message_composer.compose(
+                    question,
+                    batch.capabilites,
+                    filtered_text,
+                    previous_messages,
+                )
+                result = self.request_result(question.question_type, messages, model)
+                question.result = result
+
+    def is_question_to_generate(self, question: Question, mode: Mode) -> bool:
+        (type, mode_value) = betterproto.which_one_of(mode, "mode")
+        match type:
+            case "complete":
+                return True
+            case "by_metrics":
+                if mode_value is None:
+                    raise ValueError("ByMetrics object was not instantiated correctly.")
+                if (
+                    question.evaluation is not None
+                    and question.evaluation.reference == mode_value.reference
+                ):
+                    try:
+                        metric_evaluator = self.metric_evaluators[
+                            mode_value.evaluator_type
+                        ]
+                        return metric_evaluator(
+                            question.evaluation.result, mode_value.metric
+                        )
+                    except Exception:
+                        raise ArithmeticError("Metric could not have been evaluated.")
+                return False
+            case _:
+                return question.result is None
 
     def request_result(
         self, question_type: QuestionType, messages: list[dict[str, str]], model: str
@@ -124,7 +182,7 @@ class QuestionGeneration(InternalPipelineModule):
                 )
                 result_text = completion["choices"][0]["message"]["content"]
                 result = self.parse_result(question_type, result_text)
-                #time.sleep(self.api_request_timeout)
+                # time.sleep(self.api_request_timeout)
             except ResultException:
                 pass
         return result

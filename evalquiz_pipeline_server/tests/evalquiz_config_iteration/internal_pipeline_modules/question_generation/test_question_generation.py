@@ -16,8 +16,9 @@ from evalquiz_proto.shared.generated import (
     Question,
     QuestionType,
     Relationship,
-    LectureMaterial
+    LectureMaterial,
 )
+
 
 @pytest.fixture(scope="session")
 def question_generation() -> QuestionGeneration:
@@ -30,15 +31,15 @@ def internal_config() -> InternalConfig:
     internal_config = DefaultInternalConfig()
     internal_config.batches.append(
         Batch(
-            [LectureMaterial(
-                "Example material",
-                None,
-                "PLACEHOLDER",
-                "text/markdown",
-            )],
-            [Question(
-                QuestionType.MULTIPLE_CHOICE
-            )],
+            [
+                LectureMaterial(
+                    "Example material",
+                    None,
+                    "PLACEHOLDER",
+                    "text/markdown",
+                )
+            ],
+            [Question(QuestionType.MULTIPLE_CHOICE)],
             [
                 Capability(
                     ["categorical", "numerical"],
@@ -85,7 +86,11 @@ performed. This is discussed in Chapter 3.
 
 
 @pytest.mark.asyncio
-async def test_run(question_generation: QuestionGeneration, internal_config: InternalConfig, filtered_text: str) -> None:
+async def test_run(
+    question_generation: QuestionGeneration,
+    internal_config: InternalConfig,
+    filtered_text: str,
+) -> None:
     """
     output = MultipleChoice(
         question_text = 'Are categorical variables only utilized in classification problems?',
