@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any, Optional, Callable
 import random
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.material_filter.text_extractors.text_extractor import (
@@ -11,17 +12,17 @@ import pypandoc
 nltk.download("punkt")
 from datasets import load_dataset
 
-# arxiv_papers = load_dataset("CShorten/ML-ArXiv-Papers", split="train")
-
 
 class TopicExtensionTextExtractor(TextExtractor):
     def __init__(
         self,
         max_tokens: int,
         encode_function: Callable[[str], Any],
+        model_path: Path = Path(__file__).parent / "arxiv_papers.model",
         max_keywords: Optional[int] = None,
     ):
         super().__init__(max_tokens)
+        self.model_path = model_path
         self.max_keywords = max_keywords
         self.encode_function = encode_function
 
@@ -30,10 +31,7 @@ class TopicExtensionTextExtractor(TextExtractor):
     ) -> str:
         random.shuffle(texts)
         preprocessed_texts = self.preprocess_texts(texts)
-        # abstracts = arxiv_papers["abstract"]
-        # preprocessed_abstracts = self.preprocess_texts(abstracts)
-        # model = gensim.models.Word2Vec(preprocessed_abstracts)
-        model = gensim.models.Word2Vec.load("./arxiv_papers.model")
+        model = gensim.models.Word2Vec.load(str(self.model_path))
         model.min_count = 1
         model.build_vocab(preprocessed_texts, update=True)
         total_words = len(model.wv.index_to_key)
@@ -166,3 +164,10 @@ class TopicExtensionTextExtractor(TextExtractor):
         if self.max_keywords is not None:
             return keywords[: self.max_keywords]
         return keywords
+
+    def _train_model(self) -> None:
+        arxiv_papers = load_dataset("CShorten/ML-ArXiv-Papers", split="train")
+        abstracts = arxiv_papers["abstract"]
+        preprocessed_abstracts = self.preprocess_texts(abstracts)
+        model = gensim.models.Word2Vec(preprocessed_abstracts)
+        model.save(self.model_path)
