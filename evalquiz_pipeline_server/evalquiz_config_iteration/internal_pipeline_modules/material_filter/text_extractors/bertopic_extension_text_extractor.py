@@ -22,7 +22,9 @@ class BertopicExtensionTextExtractor(TopicExtensionTextExtractor):
         self, texts: list[str], capabilites: list[Capability]
     ) -> str:
         random.shuffle(texts)
-        training_docs = fetch_20newsgroups(subset='all',  remove=('headers', 'footers', 'quotes'))['data']
+        training_docs = fetch_20newsgroups(
+            subset="all", remove=("headers", "footers", "quotes")
+        )["data"]
         model = BERTopic(language="english", calculate_probabilities=True, verbose=True)
         model.fit(training_docs)
         most_similar_words_of_capabilites = (

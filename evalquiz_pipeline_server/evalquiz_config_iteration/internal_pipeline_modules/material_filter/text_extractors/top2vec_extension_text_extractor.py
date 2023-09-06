@@ -1,16 +1,20 @@
+from typing import Any, Optional, Callable
 import random
-from typing import Callable, Optional, Any
+from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.material_filter.text_extractors.text_extractor import (
+    TextExtractor,
+)
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.material_filter.text_extractors.topic_extension_text_extractor import (
     TopicExtensionTextExtractor,
 )
 from evalquiz_proto.shared.generated import Capability
-from contextualized_topic_models.models.ctm import ZeroShotTM
-from contextualized_topic_models.utils.data_preparation import TopicModelDataPreparation
-from contextualized_topic_models.utils.data_preparation import bert_embeddings_from_file
+import gensim
 import nltk
+from top2vec import Top2Vec
+
+nltk.download("punkt")
 
 
-class ContextualizedTopicExtensionTextExtractor(TopicExtensionTextExtractor):
+class Top2VecExtensionTextExtractor(TopicExtensionTextExtractor):
     def __init__(
         self,
         max_tokens: int,
@@ -24,16 +28,9 @@ class ContextualizedTopicExtensionTextExtractor(TopicExtensionTextExtractor):
     ) -> str:
         random.shuffle(texts)
         preprocessed_texts = self.preprocess_texts(texts)
-        data_preparation = TopicModelDataPreparation(
-            "paraphrase-multilingual-mpnet-base-v2"
+        model = Top2Vec(
+            preprocessed_texts, embedding_model="universal-sentence-encoder"
         )
-        training_dataset = data_preparation.fit(
-            text_for_contextual=texts, text_for_bow=preprocessed_texts
-        )
-        model = ZeroShotTM(
-            bow_size=len(data_preparation.vocab), contextual_size=768, n_components=50
-        )
-        model.fit(training_dataset)
         most_similar_words_of_capabilites = (
             self.find_most_similar_words_of_capabilities(
                 preprocessed_texts, model, capabilites

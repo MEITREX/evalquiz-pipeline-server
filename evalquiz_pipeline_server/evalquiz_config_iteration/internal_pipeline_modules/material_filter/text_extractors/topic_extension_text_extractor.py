@@ -9,6 +9,9 @@ import nltk
 import pypandoc
 
 nltk.download("punkt")
+from datasets import load_dataset
+
+# arxiv_papers = load_dataset("CShorten/ML-ArXiv-Papers", split="train")
 
 
 class TopicExtensionTextExtractor(TextExtractor):
@@ -27,9 +30,18 @@ class TopicExtensionTextExtractor(TextExtractor):
     ) -> str:
         random.shuffle(texts)
         preprocessed_texts = self.preprocess_texts(texts)
-        model = gensim.models.Word2Vec(preprocessed_texts, min_count=1)
+        # abstracts = arxiv_papers["abstract"]
+        # preprocessed_abstracts = self.preprocess_texts(abstracts)
+        # model = gensim.models.Word2Vec(preprocessed_abstracts)
+        model = gensim.models.Word2Vec.load("arxiv_papers.model")
+        model.min_count = 1
+        model.build_vocab(preprocessed_texts, update=True)
+        total_words = len(model.wv.index_to_key)
+        model.train(preprocessed_texts, total_words=total_words, epochs=model.epochs)
         most_similar_words_of_capabilites = (
-            self.find_most_similar_words_of_capabilities(model, capabilites)
+            self.find_most_similar_words_of_capabilities(
+                preprocessed_texts, model.wv, capabilites
+            )
         )
         sentences = nltk.sent_tokenize(" ".join(texts))
         keywords = self.compose_keywords(most_similar_words_of_capabilites)
@@ -38,8 +50,8 @@ class TopicExtensionTextExtractor(TextExtractor):
             keyword_sentences, keywords
         )
         return "\n".join(truncated_keyword_sentences)
-    
-    def preprocess_texts(self, texts: list[str]) -> list[str]:
+
+    def preprocess_texts(self, texts: list[str]) -> list[list[str]]:
         plain_texts = [
             pypandoc.convert_text(text, "plain", format="markdown") for text in texts
         ]
@@ -48,12 +60,17 @@ class TopicExtensionTextExtractor(TextExtractor):
         ]
 
     def find_most_similar_words_of_capabilities(
-        self, model: Any, capabilites: list[Capability]
+        self,
+        preprocessed_texts: list[list[str]],
+        model: Any,
+        capabilites: list[Capability],
     ) -> dict[str, list[tuple[str, float]]]:
         most_similar_words_of_capabilites: dict[str, list[tuple[str, float]]] = {}
         for capability in capabilites:
-            most_similar_words = model.wv.most_similar(
-                positive=capability.keywords, topn=5
+            most_similar_words = self.find_similar_words_in_texts(
+                preprocessed_texts,
+                model,
+                capability.keywords,
             )
             serialized_capability = capability.to_json()
             most_similar_words_of_capabilites[
@@ -61,13 +78,45 @@ class TopicExtensionTextExtractor(TextExtractor):
             ] = most_similar_words
         return most_similar_words_of_capabilites
 
+    def find_similar_words_in_texts(
+        self,
+        preprocessed_texts: list[list[str]],
+        keyed_vectors: gensim.models.KeyedVectors,
+        keywords: list[str],
+        topn: int = 5,
+    ) -> list[tuple[str, float]]:
+        word_similarity_pairs: list[tuple[str, float]] = []
+        bag_of_words: set[str] = self.bag_of_words_from_preprocessed_texts(
+            preprocessed_texts
+        )
+        keywords_length = len(keywords)
+        for word in bag_of_words:
+            similarity = keyed_vectors.n_similarity([word], keywords)
+            word_similarity_pairs.append((word, similarity))
+        most_similar_words = sorted(
+            word_similarity_pairs,
+            key=lambda word_similarity_pair: -word_similarity_pair[1],
+        )
+        return most_similar_words[keywords_length:topn]
+
+    def bag_of_words_from_preprocessed_texts(
+        self, preprocessed_texts: list[list[str]]
+    ) -> set[str]:
+        bag_of_words: set[str] = set()
+        for preprocessed_text in preprocessed_texts:
+            unique_preprocessed_text = set(preprocessed_text)
+            bag_of_words = bag_of_words.union(unique_preprocessed_text)
+        return bag_of_words
+
     def find_sentences_with_keywords(
         self, sentences: list[str], keywords: list[str]
     ) -> list[str]:
         filtered_sentences: list[str] = []
         for sentence in sentences:
             for keyword in keywords:
-                if keyword in sentence and sentence not in filtered_sentences:
+                if (
+                    keyword in sentence or keyword.capitalize() in sentence
+                ) and sentence not in filtered_sentences:
                     filtered_sentences.append(sentence)
                     break
         return filtered_sentences
@@ -79,7 +128,9 @@ class TopicExtensionTextExtractor(TextExtractor):
         filtered_sentences: dict[int, str] = {}
         for keyword in keywords:
             for i, sentence in enumerate(sentences):
-                if keyword in sentence and sentence not in filtered_sentences.values():
+                if (
+                    keyword in sentence or keyword.capitalize() in sentence
+                ) and sentence not in filtered_sentences.values():
                     encoded_sentence = self.encode_function(sentence)
                     tokens += len(encoded_sentence)
                     if tokens > self.max_tokens:
@@ -105,7 +156,7 @@ class TopicExtensionTextExtractor(TextExtractor):
         for probability_word_pairs in most_similar_words_of_capabilites.values():
             ranked_similar_probability_word_pairs.extend(probability_word_pairs)
         ranked_similar_probability_word_pairs.sort(
-            key=lambda probability_word_pair: probability_word_pair[1]
+            key=lambda probability_word_pair: -probability_word_pair[1]
         )
         ranked_similar_words = [
             probability_word_pair[0]
