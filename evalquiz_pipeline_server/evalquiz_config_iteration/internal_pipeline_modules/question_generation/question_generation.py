@@ -124,7 +124,7 @@ class QuestionGeneration(InternalPipelineModule):
                 )
                 result_text = completion["choices"][0]["message"]["content"]
                 result = self.parse_result(question_type, result_text)
-                time.sleep(self.api_request_timeout)
+                #time.sleep(self.api_request_timeout)
             except ResultException:
                 pass
         return result

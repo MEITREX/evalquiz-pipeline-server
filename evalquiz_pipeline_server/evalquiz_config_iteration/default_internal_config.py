@@ -14,7 +14,7 @@ class DefaultInternalConfig(InternalConfig):
     def __init__(self) -> None:
         self.material_server_urls = []
         self.batches: list[Batch] = []
-        self.course_settings: Optional[CourseSettings] = None
+        self.course_settings = CourseSettings([], [], [])
         self.generation_settings = GenerationSettings(
             Mode(complete=Complete()), "gpt-4"
         )

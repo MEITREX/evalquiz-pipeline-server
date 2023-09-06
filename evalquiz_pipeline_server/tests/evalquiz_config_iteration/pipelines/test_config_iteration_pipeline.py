@@ -33,10 +33,10 @@ from evalquiz_pipeline_server.tests.evalquiz_config_iteration.internal_pipeline_
     markdown_converter,
 )
 
-# example_pptx_lecture_material = internal_lecture_material(
-#    Path(__file__).parent / "~/Downloads",
-#    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-# )
+pse_vu9_vererbung_internal_lecture_material = internal_lecture_material(
+    Path(__file__).parent / "lecture_materials/pse_vu9_vererbung.pptx",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+)
 
 
 @pytest.fixture(scope="session")
@@ -49,9 +49,10 @@ def internal_config() -> InternalConfig:
 def material_filter(
     material_client: MaterialClient, markdown_converter: MarkdownConverter
 ) -> MaterialFilter:
-    # material_client.path_dictionary_controller.load_file(
-    #    example_pptx_lecture_material.local_path, example_pptx_lecture_material.hash
-    # )
+    material_client.path_dictionary_controller.load_file(
+        pse_vu9_vererbung_internal_lecture_material.local_path,
+        pse_vu9_vererbung_internal_lecture_material.hash,
+    )
     material_filter = MaterialFilter(material_client, markdown_converter)
     return material_filter
 
