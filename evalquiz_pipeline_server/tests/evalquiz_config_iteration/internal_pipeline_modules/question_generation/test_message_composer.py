@@ -43,10 +43,10 @@ def test_compose_system_message(message_composer: MessageComposer) -> None:
 
 
 def test_compose_few_shot_examples(message_composer: MessageComposer) -> None:
-    question = Question(QuestionType.MULTIPLE_CHOICE)
+    question_type = QuestionType.MULTIPLE_CHOICE
     previous_messages: list[dict[str, str]] = []
     few_shot_examples = message_composer.compose_few_shot_examples(
-        question, previous_messages
+        question_type, previous_messages
     )
     assert len(few_shot_examples) % 2 == 0
     assert few_shot_examples[0]["role"] == "user"

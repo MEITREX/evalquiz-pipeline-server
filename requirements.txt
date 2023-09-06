@@ -19,3 +19,4 @@ tiktoken
 openai
 pptx2md
 pypandoc_binary
+contextualized_topic_models

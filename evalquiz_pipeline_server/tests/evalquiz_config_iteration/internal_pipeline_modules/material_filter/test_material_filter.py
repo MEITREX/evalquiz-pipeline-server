@@ -66,6 +66,11 @@ pse_vu9_vererbung_internal_lecture_material = internal_lecture_material(
     "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 )
 
+scrum_guide_internal_lecture_material = internal_lecture_material(
+    Path(__file__).parent / "lecture_materials/scrum_guide.md",
+    "text/markdown",
+)
+
 
 @pytest.fixture(scope="session")
 def material_filter(
@@ -87,11 +92,15 @@ def material_filter(
         pse_vu9_vererbung_internal_lecture_material.local_path,
         pse_vu9_vererbung_internal_lecture_material.hash,
     )
+    material_client.path_dictionary_controller.load_file(
+        scrum_guide_internal_lecture_material.local_path,
+        scrum_guide_internal_lecture_material.hash,
+    )
     material_filter = MaterialFilter(material_client, markdown_converter)
     return material_filter
 
 
-inputs = [DefaultInternalConfig() for _ in range(4)]
+inputs = [DefaultInternalConfig() for _ in range(5)]
 
 inputs[0].batches.append(
     Batch(
@@ -142,6 +151,20 @@ inputs[3].batches.append(
         [
             Capability(
                 ["extends", "abstract"],
+                EducationalObjective.KNOW_AND_UNDERSTAND,
+                Relationship.COMPLEX,
+            )
+        ],
+    )
+)
+
+inputs[4].batches.append(
+    Batch(
+        [scrum_guide_internal_lecture_material],
+        [],
+        [
+            Capability(
+                ["product", "owner"],
                 EducationalObjective.KNOW_AND_UNDERSTAND,
                 Relationship.COMPLEX,
             )

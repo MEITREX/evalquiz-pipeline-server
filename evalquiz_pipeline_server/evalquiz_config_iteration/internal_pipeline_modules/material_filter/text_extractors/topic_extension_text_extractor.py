@@ -33,7 +33,7 @@ class TopicExtensionTextExtractor(TextExtractor):
         # abstracts = arxiv_papers["abstract"]
         # preprocessed_abstracts = self.preprocess_texts(abstracts)
         # model = gensim.models.Word2Vec(preprocessed_abstracts)
-        model = gensim.models.Word2Vec.load("arxiv_papers.model")
+        model = gensim.models.Word2Vec.load("./arxiv_papers.model")
         model.min_count = 1
         model.build_vocab(preprocessed_texts, update=True)
         total_words = len(model.wv.index_to_key)

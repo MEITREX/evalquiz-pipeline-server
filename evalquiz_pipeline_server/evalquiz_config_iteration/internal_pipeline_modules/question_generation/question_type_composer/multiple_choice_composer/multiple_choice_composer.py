@@ -1,8 +1,10 @@
-from pathlib import Path
+from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_generation.question_type_composer.multiple_choice_composer.multiple_choice_few_shot_examples import (
+    multiple_choice_few_shot_examples,
+)
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_generation.question_type_composer.question_type_composer import (
     QuestionTypeComposer,
 )
-from evalquiz_proto.shared.generated import MultipleChoice, QuestionType
+from evalquiz_proto.shared.generated import MultipleChoice, QuestionType, Result
 
 
 class MultipleChoiceComposer(QuestionTypeComposer):
@@ -10,12 +12,14 @@ class MultipleChoiceComposer(QuestionTypeComposer):
         question_type = QuestionType.MULTIPLE_CHOICE
         super().__init__(
             question_type,
-            MultipleChoice(
-                "QUESTION_TEXT",
-                "ANSWER_TEXT",
-                ["DISTRACTOR_TEXT_1", "DISTRACTOR_TEXT_2"],
+            Result(
+                multiple_choice=MultipleChoice(
+                    "QUESTION_TEXT",
+                    "ANSWER_TEXT",
+                    ["DISTRACTOR_TEXT_1", "DISTRACTOR_TEXT_2"],
+                )
             ),
-            Path(__file__).parent / "few_shot_examples",
+            multiple_choice_few_shot_examples,
         )
 
     def compose_query_message(self) -> str:
@@ -23,5 +27,6 @@ class MultipleChoiceComposer(QuestionTypeComposer):
             self.result_template()
             + """Where QUESTION_TEXT is the question.
 ANSWER_TEXT the only valid answer to the question. And DISTRACTOR_TEXT_1, DISTRACTOR_TEXT_2 answer options that are false.
+
 """
         )
