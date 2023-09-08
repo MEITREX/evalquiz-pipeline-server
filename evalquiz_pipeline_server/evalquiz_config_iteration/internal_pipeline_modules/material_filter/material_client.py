@@ -98,7 +98,8 @@ class MaterialClient:
                 lecture_material.hash,
                 async_iterator_bytes,
             )
-        raise FirstDataChunkNotMetadataException()
+        else:
+            raise FirstDataChunkNotMetadataException()
 
     async def _to_async_iterator_bytes(
         self, material_upload_data_iterator: AsyncIterator[MaterialUploadData]

@@ -1,7 +1,11 @@
 from typing import Any
+
+import betterproto
 from evalquiz_pipeline_server.evalquiz_config_iteration.default_internal_config import (
     DefaultInternalConfig,
 )
+from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_evaluation.internal_evaluations.internal_evaluation import InternalEvaluation
+from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_evaluation.internal_evaluations.internal_language_model_evaluation import InternalLanguageModelEvaluation
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.shared_traits.question_reprocess_decider import (
     QuestionReprocessDecider,
 )
@@ -12,6 +16,7 @@ from evalquiz_proto.shared.generated import (
     Batch,
     Complete,
     EvaluationSettings,
+    Evaluation,
     InternalConfig,
     Metric,
     Mode,
@@ -26,6 +31,9 @@ class QuestionEvaluation(InternalPipelineModule, QuestionReprocessDecider):
         )
         super().__init__(pipeline_module)
         self.default_internal_config = DefaultInternalConfig()
+        self.internal_evaluations = {
+            "language_model_evaluation": InternalLanguageModelEvaluation()
+        }
 
     async def run(self, input: Any) -> Any:
         if not isinstance(input, InternalConfig):
@@ -49,4 +57,8 @@ class QuestionEvaluation(InternalPipelineModule, QuestionReprocessDecider):
             for metric in metrics:
                 mode = metric.mode or Mode(complete=Complete())
                 if self.is_question_to_reprocess(question, mode):
-                    question.evaluations[metric.reference]
+                    (type, evaluation) = betterproto.which_one_of(metric.evaluation, "evaluation")
+                    if evaluation is None:
+                        raise ValueError("Evaluation was not instantiated correctly.")
+                    internal_evaluation = self.internal_evaluations[type]
+                    question.evaluations[metric.reference] = internal_evaluation.evaluate(metric.evaluation)

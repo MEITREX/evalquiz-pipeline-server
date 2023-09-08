@@ -42,7 +42,8 @@ class QuestionGeneration(InternalPipelineModule, QuestionReprocessDecider):
             "tuple[InternalConfig, list[str]]",
             "InternalConfig",
         )
-        super().__init__(pipeline_module)
+        InternalPipelineModule.__init__(self, pipeline_module)
+        QuestionReprocessDecider.__init__(self)
         self.default_internal_config = DefaultInternalConfig()
         self.api_client_registry = APIClientRegistry()
         self.max_requests = max_request

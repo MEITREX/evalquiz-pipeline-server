@@ -32,16 +32,13 @@ class QuestionReprocessDecider:
                     question.evaluations is not None
                     and mode_value.evaluation_reference in question.evaluations.keys()
                 ):
-                    try:
-                        metric_evaluator = self.metric_evaluators[
-                            mode_value.evaluator_type
-                        ]
-                        return metric_evaluator(
-                            question.evaluations[mode_value.evaluation_reference],
-                            mode_value.metric,
-                        )
-                    except Exception:
-                        raise ArithmeticError("Metric could not have been evaluated.")
+                    metric_evaluator = self.metric_evaluators[
+                        mode_value.evaluator_type
+                    ]
+                    return metric_evaluator(
+                        question.evaluations[mode_value.evaluation_reference],
+                         mode_value.metric,
+                    )
                 return False
             case _:
                 return question.result is None

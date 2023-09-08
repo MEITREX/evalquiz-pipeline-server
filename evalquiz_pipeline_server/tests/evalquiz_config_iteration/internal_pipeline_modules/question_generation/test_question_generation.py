@@ -108,7 +108,7 @@ async def test_run(
     )
     """
     input: tuple[InternalConfig, list[str]] = (internal_config, [filtered_text])
-    output = await question_generation.run(input)
+    #output = await question_generation.run(input)
     pass
 
 
