@@ -18,4 +18,4 @@ class DefaultInternalConfig(InternalConfig):
         self.generation_settings = GenerationSettings(
             Mode(complete=Complete()), "gpt-4"
         )
-        self.evaluation_settings: Optional[EvaluationSettings] = None
+        self.evaluation_settings: Optional[EvaluationSettings] = EvaluationSettings([])

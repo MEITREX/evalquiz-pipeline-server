@@ -14,7 +14,6 @@ from evalquiz_proto.shared.generated import (
     Capability,
     Complete,
     EducationalObjective,
-    Evaluation,
     InternalConfig,
     Mode,
     MultipleChoice,
@@ -133,16 +132,14 @@ question_mode_expected_results = [
         False,
     ),
     (
-        Question(
-            QuestionType.MULTIPLE_CHOICE, evaluation=Evaluation("test_evaluation", "1")
-        ),
+        Question(QuestionType.MULTIPLE_CHOICE, evaluations={"test_evaluation": "1"}),
         Mode(by_metrics=ByMetrics("test_evaluation", "eq", "1")),
         True,
     ),
     (
         Question(
             QuestionType.MULTIPLE_CHOICE,
-            evaluation=Evaluation("test_evaluation", "Hello World!"),
+            evaluations={"test_evaluation": "Hello World!"},
         ),
         Mode(by_metrics=ByMetrics("test_evaluation", "in", "Hello")),
         False,
@@ -150,7 +147,7 @@ question_mode_expected_results = [
     (
         Question(
             QuestionType.MULTIPLE_CHOICE,
-            evaluation=Evaluation("test_evaluation", "Hello World!"),
+            evaluations={"test_evaluation": "Hello World!"},
         ),
         Mode(by_metrics=ByMetrics("test_evaluation", "part_of", "Hello")),
         True,
@@ -167,5 +164,5 @@ def test_is_question_to_generate(
     mode: Mode,
     expected_result: bool,
 ) -> None:
-    result = question_generation.is_question_to_generate(question, mode)
+    result = question_generation.is_question_to_reprocess(question, mode)
     assert result == expected_result
