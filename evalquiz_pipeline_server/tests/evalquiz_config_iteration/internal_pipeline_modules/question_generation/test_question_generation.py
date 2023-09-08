@@ -10,13 +10,20 @@ from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_module
 )
 from evalquiz_proto.shared.generated import (
     Batch,
+    ByMetrics,
     Capability,
+    Complete,
     EducationalObjective,
+    Evaluation,
     InternalConfig,
+    Mode,
+    MultipleChoice,
+    Overwrite,
     Question,
     QuestionType,
     Relationship,
     LectureMaterial,
+    Result,
 )
 
 
@@ -104,3 +111,61 @@ async def test_run(
     input: tuple[InternalConfig, list[str]] = (internal_config, [filtered_text])
     output = await question_generation.run(input)
     pass
+
+
+question_mode_expected_results = [
+    (Question(QuestionType.MULTIPLE_CHOICE), Mode(complete=Complete()), True),
+    (Question(QuestionType.MULTIPLE_CHOICE), Mode(overwrite=Overwrite()), True),
+    (
+        Question(
+            QuestionType.MULTIPLE_CHOICE,
+            Result(multiple_choice=MultipleChoice("", "", [""])),
+        ),
+        Mode(complete=Complete()),
+        True,
+    ),
+    (
+        Question(
+            QuestionType.MULTIPLE_CHOICE,
+            Result(multiple_choice=MultipleChoice("", "", [""])),
+        ),
+        Mode(overwrite=Overwrite()),
+        False,
+    ),
+    (
+        Question(
+            QuestionType.MULTIPLE_CHOICE, evaluation=Evaluation("test_evaluation", "1")
+        ),
+        Mode(by_metrics=ByMetrics("test_evaluation", "eq", "1")),
+        True,
+    ),
+    (
+        Question(
+            QuestionType.MULTIPLE_CHOICE,
+            evaluation=Evaluation("test_evaluation", "Hello World!"),
+        ),
+        Mode(by_metrics=ByMetrics("test_evaluation", "in", "Hello")),
+        False,
+    ),
+    (
+        Question(
+            QuestionType.MULTIPLE_CHOICE,
+            evaluation=Evaluation("test_evaluation", "Hello World!"),
+        ),
+        Mode(by_metrics=ByMetrics("test_evaluation", "part_of", "Hello")),
+        True,
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "question, mode, expected_result", question_mode_expected_results
+)
+def test_is_question_to_generate(
+    question_generation: QuestionGeneration,
+    question: Question,
+    mode: Mode,
+    expected_result: bool,
+) -> None:
+    result = question_generation.is_question_to_generate(question, mode)
+    assert result == expected_result

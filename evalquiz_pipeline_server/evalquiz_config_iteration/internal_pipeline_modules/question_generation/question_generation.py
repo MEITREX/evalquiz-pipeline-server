@@ -19,6 +19,7 @@ from evalquiz_pipeline_server.pipeline_execution.internal_pipeline_module import
 )
 from evalquiz_proto.shared.generated import (
     Batch,
+    ByMetrics,
     CourseSettings,
     GenerationSettings,
     InternalConfig,
@@ -61,8 +62,8 @@ class QuestionGeneration(InternalPipelineModule):
             "le": lambda x, y: x < y,
             "is": lambda x, y: x is y,
             "is not": lambda x, y: x is not y,
-            "contains": lambda x, y: x.contains(y),
-            "is_contained": lambda x, y: y.contains(x),
+            "in": lambda x, y: x in y,
+            "part_of": lambda x, y: y in x,
         }
 
     async def run(self, input: Any) -> Any:
@@ -152,11 +153,11 @@ class QuestionGeneration(InternalPipelineModule):
             case "complete":
                 return True
             case "by_metrics":
-                if mode_value is None:
+                if mode_value is None or not isinstance(mode_value, ByMetrics):
                     raise ValueError("ByMetrics object was not instantiated correctly.")
                 if (
                     question.evaluation is not None
-                    and question.evaluation.reference == mode_value.reference
+                    and question.evaluation.reference == mode_value.evaluation_reference
                 ):
                     try:
                         metric_evaluator = self.metric_evaluators[

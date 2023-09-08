@@ -34,7 +34,10 @@ from evalquiz_pipeline_server.tests.evalquiz_config_iteration.internal_pipeline_
 )
 
 pse_vu9_vererbung_internal_lecture_material = internal_lecture_material(
-    Path(__file__).parent / "lecture_materials/pse_vu9_vererbung.pptx",
+    Path(__file__).parent.parent
+    / "internal_pipeline_modules"
+    / "material_filter"
+    / "lecture_materials/pse_vu9_vererbung.pptx",
     "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 )
 
