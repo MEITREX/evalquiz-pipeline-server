@@ -15,13 +15,10 @@ from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_module
 from evalquiz_pipeline_server.evalquiz_config_iteration.pipelines.config_iteration_pipeline import (
     ConfigIterationPipeline,
 )
-from evalquiz_pipeline_server.pipeline_execution.pipeline_execution import (
-    PipelineExecution,
-)
 from evalquiz_pipeline_server.tests.evalquiz_config_iteration.internal_pipeline_modules.material_filter.test_material_filter import (
     internal_lecture_material,
 )
-from evalquiz_proto.shared.generated import InternalConfig, PipelineStatus
+from evalquiz_proto.shared.generated import InternalConfig
 
 # Imported fixture, linter warning is wrong
 from evalquiz_pipeline_server.tests.evalquiz_config_iteration.internal_pipeline_modules.material_filter.test_material_client import (
@@ -32,6 +29,10 @@ from evalquiz_pipeline_server.tests.evalquiz_config_iteration.internal_pipeline_
 from evalquiz_pipeline_server.tests.evalquiz_config_iteration.internal_pipeline_modules.material_filter.test_markdown_converter import (
     markdown_converter,
 )
+
+# Imported fixture: This is needed to convince mypy that the fixture is used.
+material_client
+markdown_converter
 
 pse_vu9_vererbung_internal_lecture_material = internal_lecture_material(
     Path(__file__).parent.parent
@@ -70,7 +71,7 @@ async def test_material_filter_and_question_generation_pipeline_execution(
 ) -> None:
     pipeline = ConfigIterationPipeline()
     pipeline.pipeline_modules = [material_filter, pipeline.pipeline_modules[1]]
-    pipeline_execution = PipelineExecution(input, pipeline)
+    # pipeline_execution = PipelineExecution(input, pipeline)
     # pipeline_status_iterator = pipeline_execution.run()
     # pipeline_statuses: list[PipelineStatus] = []
     # while True:

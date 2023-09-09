@@ -14,6 +14,9 @@ from evalquiz_pipeline_server.tests.evalquiz_config_iteration.internal_pipeline_
 from evalquiz_proto.shared.internal_lecture_material import InternalLectureMaterial
 from evalquiz_proto.shared.path_dictionary_controller import PathDictionaryController
 
+# Imported fixture: This is needed to convince mypy that the fixture is used.
+internal_lecture_material
+
 
 @pytest.fixture(scope="session")
 def material_client() -> Generator[MaterialClient, None, None]:

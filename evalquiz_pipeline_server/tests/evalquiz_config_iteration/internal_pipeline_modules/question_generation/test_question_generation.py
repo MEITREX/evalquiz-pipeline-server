@@ -26,6 +26,9 @@ from evalquiz_proto.shared.generated import (
     GenerationResult,
 )
 
+# Imported fixture: This is needed to convince mypy that the fixture is used.
+internal_lecture_material
+
 
 @pytest.fixture(scope="session")
 def question_generation() -> QuestionGeneration:
@@ -92,6 +95,7 @@ performed. This is discussed in Chapter 3.
 """
 
 
+@pytest.mark.skip(reason="API call is made in every test run.")
 @pytest.mark.asyncio
 async def test_run(
     question_generation: QuestionGeneration,
@@ -109,8 +113,8 @@ async def test_run(
     )
     """
     input: tuple[InternalConfig, list[str]] = (internal_config, [filtered_text])
-    # output = await question_generation.run(input)
-    pass
+    output = await question_generation.run(input)
+    output
 
 
 question_mode_expected_results = [

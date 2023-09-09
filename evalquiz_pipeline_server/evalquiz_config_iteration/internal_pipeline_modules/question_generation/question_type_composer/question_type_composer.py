@@ -25,9 +25,13 @@ class QuestionTypeComposer(ABC):
     def compose_query_message(self) -> str:
         pass
 
-    def result_template(self, generation_result: Optional[GenerationResult] = None) -> str:
+    def result_template(
+        self, generation_result: Optional[GenerationResult] = None
+    ) -> str:
         generation_result = generation_result or self.generation_result
-        (_, result_value) = betterproto.which_one_of(generation_result, "generation_result")
+        (_, result_value) = betterproto.which_one_of(
+            generation_result, "generation_result"
+        )
         if result_value is None:
             raise ValueError(
                 "GenerationResult is not set. GenerationResult template cannot be built."

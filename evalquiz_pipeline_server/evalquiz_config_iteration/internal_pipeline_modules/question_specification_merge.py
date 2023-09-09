@@ -1,11 +1,9 @@
-from typing import Any, Optional, cast
+from typing import Any
 from evalquiz_pipeline_server.pipeline_execution.internal_pipeline_module import (
     InternalPipelineModule,
 )
 from evalquiz_proto.shared.generated import (
-    InternalConfig,
     PipelineModule,
-    GenerationResult,
 )
 
 

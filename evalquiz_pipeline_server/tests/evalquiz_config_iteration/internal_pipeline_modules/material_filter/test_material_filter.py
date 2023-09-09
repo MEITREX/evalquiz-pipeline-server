@@ -31,6 +31,10 @@ from evalquiz_proto.shared.generated import (
 )
 from evalquiz_proto.shared.internal_lecture_material import InternalLectureMaterial
 
+# Imported fixture: This is needed to convince mypy that the fixture is used.
+material_client
+markdown_converter
+
 
 def internal_lecture_material(
     local_path: Path, file_type: str

@@ -65,4 +65,5 @@ class InternalLanguageModelEvaluation(InternalEvaluation):
             result_section = regex_result.group(1)
         else:
             raise ResultSectionNotFoundException()
+        result_section
         raise NotImplementedError()

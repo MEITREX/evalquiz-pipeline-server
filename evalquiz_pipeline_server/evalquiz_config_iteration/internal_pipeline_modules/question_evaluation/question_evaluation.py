@@ -4,9 +4,6 @@ import betterproto
 from evalquiz_pipeline_server.evalquiz_config_iteration.default_internal_config import (
     DefaultInternalConfig,
 )
-from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_evaluation.internal_evaluations.internal_evaluation import (
-    InternalEvaluation,
-)
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_evaluation.internal_evaluations.internal_language_model_evaluation import (
     InternalLanguageModelEvaluation,
 )
@@ -20,7 +17,6 @@ from evalquiz_proto.shared.generated import (
     Batch,
     Complete,
     EvaluationSettings,
-    Evaluation,
     InternalConfig,
     Metric,
     Mode,

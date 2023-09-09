@@ -7,7 +7,6 @@ from evalquiz_proto.shared.generated import (
     CourseSettings,
     EducationalObjective,
     GenerationSettings,
-    Question,
     Relationship,
     QuestionType,
 )
