@@ -1,4 +1,4 @@
-from evalquiz_proto.shared.generated import Capability, Question, Result
+from evalquiz_proto.shared.generated import Capability, Question, GenerationResult
 
 
 class FewShotExample:
@@ -7,9 +7,9 @@ class FewShotExample:
         question: Question,
         capabilites: list[Capability],
         filtered_text: str,
-        result: Result,
+        generation_result: GenerationResult,
     ):
         self.question = question
         self.capabilites = capabilites
         self.filtered_text = filtered_text
-        self.result = result
+        self.generation_result = generation_result

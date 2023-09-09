@@ -30,7 +30,7 @@ from evalquiz_proto.shared.generated import (
     MultipleResponse,
     PipelineModule,
     QuestionType,
-    Result,
+    GenerationResult,
     Mode,
 )
 
@@ -138,7 +138,9 @@ class QuestionGeneration(InternalPipelineModule, QuestionReprocessDecider):
                 question.result = result
                 question.evaluation = None
 
-    def parse_result(self, question_type: QuestionType, result_text: str) -> Result:
+    def parse_result(
+        self, question_type: QuestionType, result_text: str
+    ) -> GenerationResult:
         regex_result = re.search("""<result>((.|\n)+?)</result>""", result_text)
         if regex_result:
             result_section = regex_result.group(1)
@@ -147,9 +149,9 @@ class QuestionGeneration(InternalPipelineModule, QuestionReprocessDecider):
         match question_type:
             case QuestionType.MULTIPLE_CHOICE:
                 multiple_choice = MultipleChoice().from_json(result_section)
-                return Result(multiple_choice=multiple_choice)
+                return GenerationResult(multiple_choice=multiple_choice)
             case QuestionType.MULTIPLE_RESPONSE:
                 multiple_response = MultipleResponse().from_json(result_section)
-                return Result(multiple_response=multiple_response)
+                return GenerationResult(multiple_response=multiple_response)
             case _:
                 raise ResultSectionNotParsableException()

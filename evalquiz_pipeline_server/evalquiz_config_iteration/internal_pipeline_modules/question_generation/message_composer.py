@@ -106,7 +106,7 @@ You can assume that the student already has acquired the following skills:
                 few_shot_example.question.question_type
             ]
             assistant_example = question_type_composer.result_template(
-                few_shot_example.result
+                few_shot_example.generation_result
             )
             few_shot_example_messages.append(user_example_message)
             few_shot_example_messages.append(

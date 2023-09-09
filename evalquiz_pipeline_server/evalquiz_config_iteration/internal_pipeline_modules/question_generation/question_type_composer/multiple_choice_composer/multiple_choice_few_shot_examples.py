@@ -8,7 +8,7 @@ from evalquiz_proto.shared.generated import (
     Question,
     QuestionType,
     Relationship,
-    Result,
+    GenerationResult,
 )
 
 few_shot_example_filtered_text_1 = """2Scrum Definition
@@ -219,7 +219,7 @@ few_shot_example_1 = FewShotExample(
         )
     ],
     few_shot_example_filtered_text_1,
-    Result(
+    GenerationResult(
         multiple_choice=MultipleChoice(
             "Which of the following is true about the Scrum Master?",
             "The Scrum Master is part of the Scrum Team.",
@@ -243,7 +243,7 @@ few_shot_example_2 = FewShotExample(
         )
     ],
     few_shot_example_filtered_text_2,
-    Result(
+    GenerationResult(
         multiple_choice=MultipleChoice(
             "What is a responsibility of the Product Owner?",
             "Maximizing the value of the product.",

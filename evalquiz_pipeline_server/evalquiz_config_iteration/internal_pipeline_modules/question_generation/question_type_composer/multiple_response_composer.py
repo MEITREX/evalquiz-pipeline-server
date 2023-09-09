@@ -1,7 +1,11 @@
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_generation.question_type_composer.question_type_composer import (
     QuestionTypeComposer,
 )
-from evalquiz_proto.shared.generated import MultipleResponse, QuestionType, Result
+from evalquiz_proto.shared.generated import (
+    MultipleResponse,
+    QuestionType,
+    GenerationResult,
+)
 
 
 class MultipleResponseComposer(QuestionTypeComposer):
@@ -9,7 +13,7 @@ class MultipleResponseComposer(QuestionTypeComposer):
         question_type = QuestionType.MULTIPLE_RESPONSE
         super().__init__(
             question_type,
-            Result(
+            GenerationResult(
                 multiple_response=MultipleResponse(
                     "QUESTION_TEXT",
                     ["ANSWER_TEXT_1", "ANSWER_TEXT_2"],

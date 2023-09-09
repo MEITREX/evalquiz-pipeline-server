@@ -29,16 +29,27 @@ class QuestionReprocessDecider:
                 if mode_value is None or not isinstance(mode_value, ByMetrics):
                     raise ValueError("ByMetrics object was not instantiated correctly.")
                 if (
-                    question.evaluations is not None
-                    and mode_value.evaluation_reference in question.evaluations.keys()
+                    question.evaluation_results is not None
+                    and mode_value.evaluation_reference
+                    in question.evaluation_results.keys()
                 ):
-                    metric_evaluator = self.metric_evaluators[
-                        mode_value.evaluator_type
-                    ]
-                    return metric_evaluator(
-                        question.evaluations[mode_value.evaluation_reference],
-                         mode_value.metric,
-                    )
+                    return self.run_metric_evaluator(question, mode_value)
                 return False
             case _:
-                return question.result is None
+                return question.generation_result is None
+
+    def run_metric_evaluator(self, question: Question, by_metrics: ByMetrics) -> bool:
+        metric_evaluator = self.metric_evaluators[by_metrics.evaluator_type]
+        question_evaluation_result = question.evaluation_results[
+            by_metrics.evaluation_reference
+        ]
+        (_, question_evaluation_result_value) = betterproto.which_one_of(
+            question_evaluation_result, "evaluation_result"
+        )
+        (_, by_metrics_evaluation_result) = betterproto.which_one_of(
+            by_metrics.evaluation_result, "evaluation_result"
+        )
+        return metric_evaluator(
+            question_evaluation_result_value,
+            by_metrics_evaluation_result,
+        )

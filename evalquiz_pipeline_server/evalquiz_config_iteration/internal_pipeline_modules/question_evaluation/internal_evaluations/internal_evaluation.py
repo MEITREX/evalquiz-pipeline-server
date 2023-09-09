@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from evalquiz_proto.shared.generated import Evaluation
+from evalquiz_proto.shared.generated import Evaluation, EvaluationResult
 
 
 class InternalEvaluation(ABC):
@@ -7,5 +7,5 @@ class InternalEvaluation(ABC):
         self.evaluation_type = evaluation_type
 
     @abstractmethod
-    def evaluate(self, evaluation: Evaluation) -> str:
+    def evaluate(self, evaluation: Evaluation) -> EvaluationResult:
         pass

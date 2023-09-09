@@ -4,8 +4,12 @@ import betterproto
 from evalquiz_pipeline_server.evalquiz_config_iteration.default_internal_config import (
     DefaultInternalConfig,
 )
-from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_evaluation.internal_evaluations.internal_evaluation import InternalEvaluation
-from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_evaluation.internal_evaluations.internal_language_model_evaluation import InternalLanguageModelEvaluation
+from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_evaluation.internal_evaluations.internal_evaluation import (
+    InternalEvaluation,
+)
+from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_evaluation.internal_evaluations.internal_language_model_evaluation import (
+    InternalLanguageModelEvaluation,
+)
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.shared_traits.question_reprocess_decider import (
     QuestionReprocessDecider,
 )
@@ -57,8 +61,12 @@ class QuestionEvaluation(InternalPipelineModule, QuestionReprocessDecider):
             for metric in metrics:
                 mode = metric.mode or Mode(complete=Complete())
                 if self.is_question_to_reprocess(question, mode):
-                    (type, evaluation) = betterproto.which_one_of(metric.evaluation, "evaluation")
+                    (type, evaluation) = betterproto.which_one_of(
+                        metric.evaluation, "evaluation"
+                    )
                     if evaluation is None:
                         raise ValueError("Evaluation was not instantiated correctly.")
                     internal_evaluation = self.internal_evaluations[type]
-                    question.evaluations[metric.reference] = internal_evaluation.evaluate(metric.evaluation)
+                    question.evaluation_results[
+                        metric.reference
+                    ] = internal_evaluation.evaluate(metric.evaluation)

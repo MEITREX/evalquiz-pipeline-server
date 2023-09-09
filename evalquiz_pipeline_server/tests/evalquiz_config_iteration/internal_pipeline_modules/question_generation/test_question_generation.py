@@ -14,6 +14,7 @@ from evalquiz_proto.shared.generated import (
     Capability,
     Complete,
     EducationalObjective,
+    EvaluationResult,
     InternalConfig,
     Mode,
     MultipleChoice,
@@ -22,7 +23,7 @@ from evalquiz_proto.shared.generated import (
     QuestionType,
     Relationship,
     LectureMaterial,
-    Result,
+    GenerationResult,
 )
 
 
@@ -108,7 +109,7 @@ async def test_run(
     )
     """
     input: tuple[InternalConfig, list[str]] = (internal_config, [filtered_text])
-    #output = await question_generation.run(input)
+    # output = await question_generation.run(input)
     pass
 
 
@@ -118,7 +119,7 @@ question_mode_expected_results = [
     (
         Question(
             QuestionType.MULTIPLE_CHOICE,
-            Result(multiple_choice=MultipleChoice("", "", [""])),
+            GenerationResult(multiple_choice=MultipleChoice("", "", [""])),
         ),
         Mode(complete=Complete()),
         True,
@@ -126,30 +127,49 @@ question_mode_expected_results = [
     (
         Question(
             QuestionType.MULTIPLE_CHOICE,
-            Result(multiple_choice=MultipleChoice("", "", [""])),
+            GenerationResult(multiple_choice=MultipleChoice("", "", [""])),
         ),
         Mode(overwrite=Overwrite()),
         False,
     ),
     (
-        Question(QuestionType.MULTIPLE_CHOICE, evaluations={"test_evaluation": "1"}),
-        Mode(by_metrics=ByMetrics("test_evaluation", "eq", "1")),
+        Question(
+            QuestionType.MULTIPLE_CHOICE,
+            evaluation_results={"test_evaluation": EvaluationResult(str_value="1")},
+        ),
+        Mode(
+            by_metrics=ByMetrics(
+                "test_evaluation", "eq", EvaluationResult(str_value="1")
+            )
+        ),
         True,
     ),
     (
         Question(
             QuestionType.MULTIPLE_CHOICE,
-            evaluations={"test_evaluation": "Hello World!"},
+            evaluation_results={
+                "test_evaluation": EvaluationResult(str_value="Hello World!")
+            },
         ),
-        Mode(by_metrics=ByMetrics("test_evaluation", "in", "Hello")),
+        Mode(
+            by_metrics=ByMetrics(
+                "test_evaluation", "in", EvaluationResult(str_value="Hello")
+            )
+        ),
         False,
     ),
     (
         Question(
             QuestionType.MULTIPLE_CHOICE,
-            evaluations={"test_evaluation": "Hello World!"},
+            evaluation_results={
+                "test_evaluation": EvaluationResult(str_value="Hello World!")
+            },
         ),
-        Mode(by_metrics=ByMetrics("test_evaluation", "part_of", "Hello")),
+        Mode(
+            by_metrics=ByMetrics(
+                "test_evaluation", "part_of", EvaluationResult(str_value="Hello")
+            )
+        ),
         True,
     ),
 ]
