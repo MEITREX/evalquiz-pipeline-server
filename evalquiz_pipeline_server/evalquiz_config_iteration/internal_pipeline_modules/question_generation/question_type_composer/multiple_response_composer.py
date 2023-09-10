@@ -1,6 +1,9 @@
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_generation.question_type_composer.question_type_composer import (
     QuestionTypeComposer,
 )
+from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_generation.question_type_composer.generation_result_template import (
+    GenerationResultTemplate,
+)
 from evalquiz_proto.shared.generated import (
     MultipleResponse,
     QuestionType,
@@ -8,7 +11,7 @@ from evalquiz_proto.shared.generated import (
 )
 
 
-class MultipleResponseComposer(QuestionTypeComposer):
+class MultipleResponseComposer(QuestionTypeComposer, GenerationResultTemplate):
     def __init__(self) -> None:
         question_type = QuestionType.MULTIPLE_RESPONSE
         super().__init__(

@@ -4,6 +4,9 @@ from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_module
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_generation.question_type_composer.question_type_composer import (
     QuestionTypeComposer,
 )
+from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_generation.question_type_composer.generation_result_template import (
+    GenerationResultTemplate,
+)
 from evalquiz_proto.shared.generated import (
     MultipleChoice,
     QuestionType,
@@ -11,10 +14,11 @@ from evalquiz_proto.shared.generated import (
 )
 
 
-class MultipleChoiceComposer(QuestionTypeComposer):
+class MultipleChoiceComposer(QuestionTypeComposer, GenerationResultTemplate):
     def __init__(self) -> None:
         question_type = QuestionType.MULTIPLE_CHOICE
-        super().__init__(
+        QuestionTypeComposer.__init__(
+            self,
             question_type,
             GenerationResult(
                 multiple_choice=MultipleChoice(
@@ -25,10 +29,11 @@ class MultipleChoiceComposer(QuestionTypeComposer):
             ),
             multiple_choice_few_shot_examples,
         )
+        GenerationResultTemplate.__init__(self)
 
     def compose_query_message(self) -> str:
         return (
-            self.result_template()
+            self.result_template(self.generation_result)
             + """Where QUESTION_TEXT is the question.
 ANSWER_TEXT the only valid answer to the question. And DISTRACTOR_TEXT_1, DISTRACTOR_TEXT_2 answer options that are false.
 

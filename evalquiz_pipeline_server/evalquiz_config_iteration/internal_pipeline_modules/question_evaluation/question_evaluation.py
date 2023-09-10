@@ -54,6 +54,8 @@ class QuestionEvaluation(InternalPipelineModule, QuestionReprocessDecider):
 
     def process_batch(self, batch: Batch, metrics: list[Metric]) -> None:
         for question in batch.question_to_generate:
+            if question.generation_result is None:
+                continue
             for metric in metrics:
                 mode = metric.mode or Mode(complete=Complete())
                 if self.is_question_to_reprocess(question, mode):
@@ -65,4 +67,6 @@ class QuestionEvaluation(InternalPipelineModule, QuestionReprocessDecider):
                     internal_evaluation = self.internal_evaluations[type]
                     question.evaluation_results[
                         metric.reference
-                    ] = internal_evaluation.evaluate(metric.evaluation)
+                    ] = internal_evaluation.evaluate(
+                        metric.evaluation, question.generation_result
+                    )
