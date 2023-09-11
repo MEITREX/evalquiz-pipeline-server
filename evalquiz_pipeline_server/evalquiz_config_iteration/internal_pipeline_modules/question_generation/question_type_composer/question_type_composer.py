@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_generation.question_type_composer.few_shot_example import (
     FewShotExample,
 )
@@ -24,3 +25,9 @@ class QuestionTypeComposer(ABC, GenerationResultTemplate):
     @abstractmethod
     def compose_query_message(self) -> str:
         pass
+
+    def result_template(
+        self, generation_result: Optional[GenerationResult] = None
+    ) -> str:
+        generation_result = generation_result or self.generation_result
+        return super().result_template(generation_result)

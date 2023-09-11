@@ -12,4 +12,4 @@ class GenerationResultTemplate:
                 "GenerationResult is not set. GenerationResult template cannot be built."
             )
         json_result = result_value.to_json(indent=4)
-        return "<result>\n" + json_result + "\n</result>\n\n"
+        return "<result type=generation>" + json_result + "</result>\n\n"

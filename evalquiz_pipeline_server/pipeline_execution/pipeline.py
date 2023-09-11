@@ -1,4 +1,4 @@
-from evalquiz_pipeline_server.pipeline_execution.exceptions import (
+from evalquiz_proto.shared.exceptions import (
     PipelineModuleCompositionNotValidException,
 )
 from evalquiz_pipeline_server.pipeline_execution.internal_pipeline_module import (

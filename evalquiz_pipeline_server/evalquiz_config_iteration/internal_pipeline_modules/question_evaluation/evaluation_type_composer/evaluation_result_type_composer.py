@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-import betterproto
+from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_evaluation.evaluation_type_composer.evaluation_result_template import (
+    EvaluationResultTemplate,
+)
 from evalquiz_proto.shared.generated import EvaluationResult, EvaluationResultType
 
 
-class EvaluationResultTypeComposer(ABC):
+class EvaluationResultTypeComposer(ABC, EvaluationResultTemplate):
     """Specific instructions to give according to a EvaluationResultType."""
 
     def __init__(
@@ -26,12 +28,4 @@ class EvaluationResultTypeComposer(ABC):
         self, evaluation_result: Optional[EvaluationResult] = None
     ) -> str:
         evaluation_result = evaluation_result or self.evaluation_result
-        (_, result_value) = betterproto.which_one_of(
-            evaluation_result, "evaluation_result"
-        )
-        if result_value is None:
-            raise ValueError(
-                "EvaluationResult is not set. EvaluationResult template cannot be built."
-            )
-        json_result = result_value.to_json(indent=4)
-        return "<result>\n" + json_result + "\n</result>\n\n"
+        return super().result_template(evaluation_result)

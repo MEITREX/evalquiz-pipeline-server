@@ -1,6 +1,6 @@
 from typing import Any
 import pytest
-from evalquiz_pipeline_server.pipeline_execution.exceptions import (
+from evalquiz_proto.shared.exceptions import (
     PipelineModuleCompositionNotValidException,
 )
 from evalquiz_pipeline_server.pipeline_execution.pipeline import Pipeline

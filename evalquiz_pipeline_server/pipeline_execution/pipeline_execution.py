@@ -1,5 +1,5 @@
 from typing import Any, AsyncIterator, Optional
-from evalquiz_pipeline_server.pipeline_execution.exceptions import (
+from evalquiz_proto.shared.exceptions import (
     PipelineExecutionException,
 )
 from evalquiz_pipeline_server.pipeline_execution.pipeline import Pipeline
@@ -42,6 +42,13 @@ class PipelineExecution:
                     pipeline_module, ModuleStatus.FAILED, None, str(e)
                 )
                 return
+            except Exception as e:
+                yield self._build_pipeline_status(
+                    pipeline_module,
+                    ModuleStatus.FAILED,
+                    None,
+                    "500: Internal Server Error: " + str(e),
+                )
             input = output
         last_pipeline_module = self.pipeline.pipeline_modules[-1]
         yield self._build_pipeline_status(

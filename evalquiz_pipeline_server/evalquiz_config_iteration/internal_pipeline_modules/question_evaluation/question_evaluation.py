@@ -13,6 +13,10 @@ from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_module
 from evalquiz_pipeline_server.pipeline_execution.internal_pipeline_module import (
     InternalPipelineModule,
 )
+from evalquiz_proto.shared.exceptions import (
+    MissingDefaultInternalConfigAttributeException,
+    PipelineModuleRuntimeInputException,
+)
 from evalquiz_proto.shared.generated import (
     Batch,
     Complete,
@@ -37,7 +41,7 @@ class QuestionEvaluation(InternalPipelineModule, QuestionReprocessDecider):
 
     async def run(self, input: Any) -> Any:
         if not isinstance(input, InternalConfig):
-            raise TypeError()
+            raise PipelineModuleRuntimeInputException()
         evaluation_settings = self.resolve_evaluation_settings(input)
         for batch in input.batches:
             self.process_batch(batch, evaluation_settings.metrics)
@@ -50,7 +54,7 @@ class QuestionEvaluation(InternalPipelineModule, QuestionReprocessDecider):
         elif self.default_internal_config.evaluation_settings is not None:
             return self.default_internal_config.evaluation_settings
         else:
-            raise ValueError("DefaultInternalConfig not specified correctly.")
+            raise MissingDefaultInternalConfigAttributeException()
 
     def process_batch(self, batch: Batch, metrics: list[Metric]) -> None:
         for question in batch.question_to_generate:

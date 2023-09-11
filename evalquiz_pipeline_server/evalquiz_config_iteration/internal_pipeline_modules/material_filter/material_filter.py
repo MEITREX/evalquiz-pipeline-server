@@ -17,6 +17,10 @@ from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_module
 from evalquiz_pipeline_server.pipeline_execution.internal_pipeline_module import (
     InternalPipelineModule,
 )
+from evalquiz_proto.shared.exceptions import (
+    MissingDefaultInternalConfigAttributeException,
+    PipelineModuleRuntimeInputException,
+)
 from evalquiz_proto.shared.generated import Batch, InternalConfig, PipelineModule
 from evalquiz_proto.shared.internal_lecture_material import InternalLectureMaterial
 import tiktoken
@@ -38,7 +42,7 @@ class MaterialFilter(InternalPipelineModule):
 
     async def run(self, input: Any) -> Any:
         if not isinstance(input, InternalConfig):
-            raise TypeError()
+            raise PipelineModuleRuntimeInputException()
         model = self.resolve_model(input)
         encode_function = tiktoken.encoding_for_model(model)
         material_client = self.material_client or MaterialClient(
@@ -67,7 +71,7 @@ class MaterialFilter(InternalPipelineModule):
         ):
             return self.default_internal_config.generation_settings.model
         else:
-            raise ValueError("DefaultInternalConfig not specified correctly.")
+            raise MissingDefaultInternalConfigAttributeException()
 
     async def process_batch(
         self,

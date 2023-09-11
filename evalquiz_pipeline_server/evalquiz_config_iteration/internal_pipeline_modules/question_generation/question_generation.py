@@ -10,7 +10,8 @@ from evalquiz_pipeline_server.evalquiz_config_iteration.default_internal_config 
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_generation.message_composer import (
     MessageComposer,
 )
-from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_generation.result_exceptions import (
+from evalquiz_proto.shared.exceptions import (
+    MissingDefaultInternalConfigAttributeException,
     ResultException,
     ResultSectionNotFoundException,
     ResultSectionNotParsableException,
@@ -70,7 +71,7 @@ class QuestionGeneration(InternalPipelineModule, QuestionReprocessDecider):
         elif self.default_internal_config.generation_settings is not None:
             return self.default_internal_config.generation_settings
         else:
-            raise ValueError("DefaultInternalConfig not specified correctly.")
+            raise MissingDefaultInternalConfigAttributeException()
 
     def resolve_course_settings(
         self, internal_config: InternalConfig
@@ -80,7 +81,7 @@ class QuestionGeneration(InternalPipelineModule, QuestionReprocessDecider):
         elif self.default_internal_config.course_settings is not None:
             return self.default_internal_config.course_settings
         else:
-            raise ValueError("DefaultInternalConfig not specified correctly.")
+            raise MissingDefaultInternalConfigAttributeException()
 
     def resolve_model(self, internal_config: InternalConfig) -> str:
         if (
@@ -94,7 +95,7 @@ class QuestionGeneration(InternalPipelineModule, QuestionReprocessDecider):
         ):
             return self.default_internal_config.generation_settings.model
         else:
-            raise ValueError("DefaultInternalConfig not specified correctly.")
+            raise MissingDefaultInternalConfigAttributeException()
 
     def resolve_mode(self, internal_config: InternalConfig) -> Mode:
         if (
@@ -108,7 +109,7 @@ class QuestionGeneration(InternalPipelineModule, QuestionReprocessDecider):
         ):
             return self.default_internal_config.generation_settings.mode
         else:
-            raise ValueError("DefaultInternalConfig not specified correctly.")
+            raise MissingDefaultInternalConfigAttributeException()
 
     def process_batch(
         self,
@@ -128,9 +129,7 @@ class QuestionGeneration(InternalPipelineModule, QuestionReprocessDecider):
                     previous_messages,
                 )
                 llm_client = self.api_client_registry.llm_clients[model]
-                result_text = llm_client.request_result_text(
-                    question.question_type, messages, model
-                )
+                result_text = llm_client.request_result_text(messages)
                 try:
                     result = self.parse_result(question.question_type, result_text)
                 except ResultException:
@@ -141,7 +140,9 @@ class QuestionGeneration(InternalPipelineModule, QuestionReprocessDecider):
     def parse_result(
         self, question_type: QuestionType, result_text: str
     ) -> GenerationResult:
-        regex_result = re.search("""<result>((.|\n)+?)</result>""", result_text)
+        regex_result = re.search(
+            """<result type=generation>((.|\n)+?)</result>""", result_text
+        )
         if regex_result:
             result_section = regex_result.group(1)
         else:

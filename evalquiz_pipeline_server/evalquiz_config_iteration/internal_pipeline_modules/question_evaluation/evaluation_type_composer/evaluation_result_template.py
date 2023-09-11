@@ -9,7 +9,6 @@ class EvaluationResultTemplate:
         )
         if result_value is None:
             raise ValueError(
-                "EvaluationResult is not set. GenerationResult template cannot be built."
+                "EvaluationResult is not set. EvaluationResult template cannot be built."
             )
-        json_result = result_value.to_json(indent=4)
-        return "<result>\n" + json_result + "\n</result>\n\n"
+        return "<result type=evaluation>" + str(result_value) + "</result>\n\n"
