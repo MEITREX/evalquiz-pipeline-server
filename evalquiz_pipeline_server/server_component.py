@@ -1,3 +1,8 @@
+import asyncio
+from grpclib.server import Server
+from evalquiz_pipeline_server.evalquiz_config_iteration.pipelines.config_iteration_pipeline import (
+    ConfigIterationPipeline,
+)
 from evalquiz_pipeline_server.pipeline_execution.pipeline_executor import (
     PipelineExecutor,
 )
@@ -16,6 +21,9 @@ class PipelineServerService(PipelineServerBase):
     def __init__(self) -> None:
         """Constructor of PipelineServerService."""
         self.pipeline_executor = PipelineExecutor()
+        self.pipeline_executor.pipelines[
+            "evalquiz_config_iteration"
+        ] = ConfigIterationPipeline()
 
     async def iterate_config(
         self, internal_config: InternalConfig
@@ -38,3 +46,15 @@ class PipelineServerService(PipelineServerBase):
                 yield pipeline_status
             except StopAsyncIteration:
                 break
+
+
+async def main() -> None:
+    server = Server([PipelineServerService()])
+    await server.start("127.0.0.1", 50051)
+    print("Server started at port 50051.")
+    await server.wait_closed()
+
+
+if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())

@@ -12,10 +12,15 @@ from evalquiz_proto.shared.generated import (
 
 class DefaultInternalConfig(InternalConfig):
     def __init__(self) -> None:
-        self.material_server_urls = []
-        self.batches: list[Batch] = []
-        self.course_settings = CourseSettings([], [], [])
-        self.generation_settings = GenerationSettings(
-            Mode(complete=Complete()), "gpt-4"
+        material_server_urls: list[str] = []
+        batches: list[Batch] = []
+        course_settings = CourseSettings([], [], [])
+        generation_settings = GenerationSettings(Mode(complete=Complete()), "gpt-4")
+        evaluation_settings: Optional[EvaluationSettings] = EvaluationSettings([])
+        super().__init__(
+            material_server_urls,
+            batches,
+            course_settings,
+            generation_settings,
+            evaluation_settings,
         )
-        self.evaluation_settings: Optional[EvaluationSettings] = EvaluationSettings([])

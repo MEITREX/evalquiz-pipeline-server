@@ -1,9 +1,6 @@
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.material_filter.material_filter import (
     MaterialFilter,
 )
-from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_drop import (
-    QuestionDrop,
-)
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_evaluation.question_evaluation import (
     QuestionEvaluation,
 )
@@ -22,6 +19,5 @@ class ConfigIterationPipeline(Pipeline):
             MaterialFilter(),
             QuestionGeneration(),
             QuestionEvaluation(),
-            QuestionDrop(),
         ]
         super().__init__("config_iteration_pipeline", pipeline_modules)

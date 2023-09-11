@@ -15,10 +15,13 @@ from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_module
 from evalquiz_pipeline_server.evalquiz_config_iteration.pipelines.config_iteration_pipeline import (
     ConfigIterationPipeline,
 )
+from evalquiz_pipeline_server.pipeline_execution.pipeline_execution import (
+    PipelineExecution,
+)
 from evalquiz_pipeline_server.tests.evalquiz_config_iteration.internal_pipeline_modules.material_filter.test_material_filter import (
     internal_lecture_material,
 )
-from evalquiz_proto.shared.generated import InternalConfig
+from evalquiz_proto.shared.generated import InternalConfig, PipelineStatus
 
 # Imported fixture, linter warning is wrong
 from evalquiz_pipeline_server.tests.evalquiz_config_iteration.internal_pipeline_modules.material_filter.test_material_client import (
@@ -65,19 +68,20 @@ def test_composition() -> None:
     ConfigIterationPipeline()
 
 
+# @pytest.mark.skip(reason="API call is made in every test run.")
 @pytest.mark.asyncio
 async def test_material_filter_and_question_generation_pipeline_execution(
     material_filter: MaterialFilter, internal_config: InternalConfig
 ) -> None:
     pipeline = ConfigIterationPipeline()
-    pipeline.pipeline_modules = [material_filter, pipeline.pipeline_modules[1]]
-    # pipeline_execution = PipelineExecution(input, pipeline)
-    # pipeline_status_iterator = pipeline_execution.run()
-    # pipeline_statuses: list[PipelineStatus] = []
-    # while True:
-    #    try:
-    #        pipeline_status = await pipeline_status_iterator.__anext__()
-    #        pipeline_statuses.append(pipeline_status)
-    #    except StopAsyncIteration:
-    #        break
-    # pass
+    pipeline.pipeline_modules[0] = material_filter
+    pipeline_execution = PipelineExecution(internal_config, pipeline)
+    pipeline_status_iterator = pipeline_execution.run()
+    pipeline_statuses: list[PipelineStatus] = []
+    while True:
+        try:
+            pipeline_status = await pipeline_status_iterator.__anext__()
+            pipeline_statuses.append(pipeline_status)
+        except StopAsyncIteration:
+            break
+    assert pipeline_status.result == internal_config

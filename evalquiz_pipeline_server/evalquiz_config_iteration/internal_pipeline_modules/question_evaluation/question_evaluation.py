@@ -45,6 +45,7 @@ class QuestionEvaluation(InternalPipelineModule, QuestionReprocessDecider):
         evaluation_settings = self.resolve_evaluation_settings(input)
         for batch in input.batches:
             self.process_batch(batch, evaluation_settings.metrics)
+        return input
 
     def resolve_evaluation_settings(
         self, internal_config: InternalConfig
