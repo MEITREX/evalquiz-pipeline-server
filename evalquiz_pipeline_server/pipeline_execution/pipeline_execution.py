@@ -1,4 +1,7 @@
 from typing import Any, AsyncIterator, Optional
+from evalquiz_pipeline_server.pipeline_execution.internal_pipeline_module import (
+    InternalPipelineModule,
+)
 from evalquiz_proto.shared.exceptions import (
     PipelineExecutionException,
 )
@@ -6,7 +9,6 @@ from evalquiz_pipeline_server.pipeline_execution.pipeline import Pipeline
 from evalquiz_proto.shared.generated import (
     BatchStatus,
     ModuleStatus,
-    PipelineModule,
     PipelineStatus,
 )
 
@@ -57,15 +59,16 @@ class PipelineExecution:
 
     def _build_pipeline_status(
         self,
-        pipeline_module: PipelineModule,
+        internal_pipeline_module: InternalPipelineModule,
         module_status: ModuleStatus,
         result: Optional[Any] = None,
         error_message: Optional[str] = None,
     ) -> PipelineStatus:
         """Helper method to build PipelineStatus according to method parameters.
+        Casts InternalPipelineModule to PipelineModule.
 
         Args:
-            pipeline_module (PipelineModule): PipelineModule of status.
+            internal_pipeline_module (InternalPipelineModule): InternalPipelineModule of status.
             module_status (ModuleStatus): Module status itself.
             result (Optional[Any], optional): Result of the last pipeline execution step. Defaults to None.
             error_message (Optional[str], optional): An error that occurred while executing the given PipelineModule. Defaults to None.
@@ -73,5 +76,10 @@ class PipelineExecution:
         Returns:
             PipelineStatus: The built PipelineStatus.
         """
-        batch_status = BatchStatus(error_message, pipeline_module, module_status)
+        pipeline_module = internal_pipeline_module.cast_to_pipeline_module()
+        batch_status = BatchStatus(
+            error_message,
+            pipeline_module,
+            module_status,
+        )
         return PipelineStatus(result, [batch_status])

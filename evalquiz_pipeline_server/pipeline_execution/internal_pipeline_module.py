@@ -37,3 +37,12 @@ class InternalPipelineModule(PipelineModule, ABC):
             Any: Output of pipeline implementation.
         """
         pass
+
+    def cast_to_pipeline_module(self) -> PipelineModule:
+        """Casts self object to object of superclass: PipelineModule.
+        This method is required, as Python does not feature object type casting.
+
+        Returns:
+            PipelineModule: Self object casted into PipelineModule.
+        """
+        return PipelineModule(self.name, self.input_datatype, self.output_datatype)
