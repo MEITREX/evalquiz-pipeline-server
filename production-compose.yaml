@@ -2,13 +2,13 @@ services:
   app:
     build:
       context: .
-    volumes:
-      - ./:/evalquiz-pipeline-server
+      dockerfile: production-dockerfile
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    image: evalquizcontainers.azurecr.io/evalquiz-pipeline-server
     command: python -m evalquiz_pipeline_server.server_component
     ports:
       - 50051:50051
-    secrets:
-      - openai_api_key
     links:
       - db
   db:
@@ -16,16 +16,5 @@ services:
     restart: always
     volumes:
       - mongodb:/data/db
-  mongoexpress:
-    image: mongo-express
-    ports:
-        - "8081:8082"
-    links:
-      - db
-    environment: 
-        - ME_CONFIG_MONGODB_URL=mongodb://db:27017
 volumes:
   mongodb:
-secrets:
-  openai_api_key:
-    file: /tmp/openai_api_key.txt
