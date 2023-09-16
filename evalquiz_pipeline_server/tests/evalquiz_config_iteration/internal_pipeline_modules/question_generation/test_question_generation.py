@@ -95,7 +95,7 @@ performed. This is discussed in Chapter 3.
 """
 
 
-@pytest.mark.skip(reason="API call is made in every test run.")
+#@pytest.mark.skip(reason="API call is made in every test run.")
 @pytest.mark.asyncio
 async def test_run(
     question_generation: QuestionGeneration,

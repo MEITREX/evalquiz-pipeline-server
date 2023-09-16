@@ -1,3 +1,4 @@
+import os
 import openai
 from datetime import timedelta
 from cs import ratelimit
@@ -7,8 +8,7 @@ from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_module
 
 openai.api_type = "azure"
 openai.api_version = "2023-08-01-preview"
-with open("/run/secrets/openai_api_key") as openai_api_key:
-    openai.api_key = openai_api_key.read().replace("\n", "")
+openai.api_key = os.environ["OPENAI_API_KEY"]
 openai.api_base = "https://evalquizuk.openai.azure.com/"
 if openai.api_key is None:
     raise ValueError("OpenAI key is not set, therefore no requests can be made.")
