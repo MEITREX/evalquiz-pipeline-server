@@ -11,5 +11,5 @@ class GenerationResultTemplate:
             raise ValueError(
                 "GenerationResult is not set. GenerationResult template cannot be built."
             )
-        json_result = result_value.to_json(indent=4)
+        json_result = result_value.to_json(indent=4, include_default_values=True)
         return "<result type=generation>" + json_result + "</result>\n\n"

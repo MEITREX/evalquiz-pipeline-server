@@ -70,7 +70,7 @@ class TopicExtensionTextExtractor(TextExtractor):
                 model,
                 capability.keywords,
             )
-            serialized_capability = capability.to_json()
+            serialized_capability = capability.to_json(include_default_values=True)
             most_similar_words_of_capabilites[
                 serialized_capability
             ] = most_similar_words

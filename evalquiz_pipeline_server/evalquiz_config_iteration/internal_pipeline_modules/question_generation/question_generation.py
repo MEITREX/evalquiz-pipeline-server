@@ -134,8 +134,8 @@ class QuestionGeneration(InternalPipelineModule, QuestionReprocessDecider):
                     result = self.parse_result(question.question_type, result_text)
                 except ResultException:
                     pass
-                question.result = result
-                question.evaluation = None
+                question.generation_result = result
+                question.evaluation_results = {}
 
     def parse_result(
         self, question_type: QuestionType, result_text: str

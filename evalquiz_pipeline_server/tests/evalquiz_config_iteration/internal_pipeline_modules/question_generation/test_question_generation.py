@@ -49,7 +49,7 @@ def internal_config() -> InternalConfig:
                     "text/markdown",
                 )
             ],
-            [Question(QuestionType.MULTIPLE_CHOICE)],
+            [Question(QuestionType.MULTIPLE_CHOICE, None, {})],
             [
                 Capability(
                     ["categorical", "numerical"],
@@ -58,6 +58,33 @@ def internal_config() -> InternalConfig:
                 )
             ],
         )
+    )
+    return internal_config
+
+
+@pytest.fixture(scope="session")
+def internal_config_small() -> InternalConfig:
+    internal_config = InternalConfig(
+        batches=[
+            Batch(
+                [
+                    LectureMaterial(
+                        "",
+                        "",
+                        "1588dd130f5ccf190b3cdf0b5b89696c694e8afdf67ca14b3cb6acbedb0c7ade",
+                        "",
+                    )
+                ],
+                [Question(QuestionType.MULTIPLE_CHOICE, None, {})],
+                [
+                    Capability(
+                        [],
+                        EducationalObjective.KNOW_AND_UNDERSTAND,
+                        Relationship.SIMILARITY,
+                    )
+                ],
+            )
+        ]
     )
     return internal_config
 
@@ -95,7 +122,7 @@ performed. This is discussed in Chapter 3.
 """
 
 
-#@pytest.mark.skip(reason="API call is made in every test run.")
+# @pytest.mark.skip(reason="API call is made in every test run.")
 @pytest.mark.asyncio
 async def test_run(
     question_generation: QuestionGeneration,
@@ -118,12 +145,21 @@ async def test_run(
 
 
 question_mode_expected_results = [
-    (Question(QuestionType.MULTIPLE_CHOICE), Mode(complete=Complete()), True),
-    (Question(QuestionType.MULTIPLE_CHOICE), Mode(overwrite=Overwrite()), True),
+    (
+        Question(QuestionType.MULTIPLE_CHOICE, evaluation_results={}),
+        Mode(complete=Complete()),
+        True,
+    ),
+    (
+        Question(QuestionType.MULTIPLE_CHOICE, evaluation_results={}),
+        Mode(overwrite=Overwrite()),
+        True,
+    ),
     (
         Question(
             QuestionType.MULTIPLE_CHOICE,
             GenerationResult(multiple_choice=MultipleChoice("", "", [""])),
+            {},
         ),
         Mode(complete=Complete()),
         True,
@@ -132,6 +168,7 @@ question_mode_expected_results = [
         Question(
             QuestionType.MULTIPLE_CHOICE,
             GenerationResult(multiple_choice=MultipleChoice("", "", [""])),
+            {},
         ),
         Mode(overwrite=Overwrite()),
         False,
@@ -190,3 +227,9 @@ def test_is_question_to_generate(
 ) -> None:
     result = question_generation.is_question_to_reprocess(question, mode)
     assert result == expected_result
+
+
+def test_internal_config_to_json(internal_config_small: InternalConfig) -> None:
+    internal_config_json = internal_config_small.to_json(include_default_values=True)
+    internal_config = InternalConfig().from_json(internal_config_json)
+    pass

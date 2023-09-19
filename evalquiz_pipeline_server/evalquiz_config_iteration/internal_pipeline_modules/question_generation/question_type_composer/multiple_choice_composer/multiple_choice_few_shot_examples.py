@@ -208,9 +208,7 @@ The Product Backlog may also be adjusted to meet new opportunities.
 """
 
 few_shot_example_1 = FewShotExample(
-    Question(
-        QuestionType.MULTIPLE_CHOICE,
-    ),
+    Question(QuestionType.MULTIPLE_CHOICE, evaluation_results={}),
     [
         Capability(
             ["scrum", "master"],
@@ -232,9 +230,7 @@ few_shot_example_1 = FewShotExample(
 )
 
 few_shot_example_2 = FewShotExample(
-    Question(
-        QuestionType.MULTIPLE_CHOICE,
-    ),
+    Question(QuestionType.MULTIPLE_CHOICE, evaluation_results={}),
     [
         Capability(
             ["product", "owner"],

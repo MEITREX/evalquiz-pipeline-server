@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import Union
 import tiktoken
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.question_generation.question_type_composer.few_shot_example import (
     FewShotExample,
@@ -142,8 +143,11 @@ Markdown formatted text input:
     def compose_capability_message(self, capabilites: list[Capability]) -> str:
         capability_message = ""
         for capability in capabilites:
+            educational_objective_enum = self._convert_to_educational_objective_enum(
+                capability.educational_objective
+            )
             capability_text = (
-                capability.educational_objective.name
+                educational_objective_enum.name
                 + " "
                 + self.relationship_translations[capability.relationship]
                 + ": "
@@ -170,11 +174,21 @@ Markdown formatted text input:
             educational_objective,
             explanation,
         ) in relevant_educational_objective_explanations.items():
+            educational_objective_enum = self._convert_to_educational_objective_enum(
+                educational_objective
+            )
             objective_explanations_message += (
-                educational_objective.name + ": " + explanation + ".\n"
+                educational_objective_enum.name + ": " + explanation + ".\n"
             )
         objective_explanations_message += "\n"
         return objective_explanations_message
+
+    def _convert_to_educational_objective_enum(
+        self, educational_objective: Union[int, EducationalObjective]
+    ) -> EducationalObjective:
+        if isinstance(educational_objective, int):
+            return EducationalObjective(educational_objective)
+        return educational_objective
 
     def collect_few_shot_example_sources(
         self, few_shot_example_sources: defaultdict[int, defaultdict[str, str]]

@@ -1,7 +1,9 @@
-import mimetypes
+from datetime import datetime
+import os
 from pathlib import Path
 from typing import AsyncIterator
 import betterproto
+from blake3 import blake3
 from grpclib.client import Channel
 from evalquiz_proto.shared.exceptions import (
     FirstDataChunkNotMetadataException,
@@ -15,6 +17,7 @@ from evalquiz_proto.shared.generated import (
     String,
 )
 from evalquiz_proto.shared.internal_lecture_material import InternalLectureMaterial
+from evalquiz_proto.shared.mimetype_resolver import MimetypeResolver
 from evalquiz_proto.shared.path_dictionary_controller import (
     PathDictionaryController,
 )
@@ -28,6 +31,7 @@ class MaterialClient:
         path_dictionary_controller: PathDictionaryController = PathDictionaryController(),
     ) -> None:
         """Constructor of MaterialClient.
+        Creates `material_storage_path` folder, if not existent.
 
         Args:
             material_server_urls (list[str]): A list of URLs where material servers can be found. Defaults to [].
@@ -35,10 +39,12 @@ class MaterialClient:
             path_dictionary_controller (PathDictionaryController): Component for managing lecture material file accesses on system.
         """
         self.material_server_port = 28390
-        self.request_timeout_seconds = 2.0
+        self.request_timeout_seconds = 20.0
         self.material_server_urls = material_server_urls
         self.material_storage_path = material_storage_path
         self.path_dictionary_controller = path_dictionary_controller
+        if not os.path.exists(material_storage_path):
+            os.mkdir(material_storage_path)
 
     async def query_material(
         self, lecture_material: LectureMaterial
@@ -81,25 +87,48 @@ class MaterialClient:
             request_lecture_material
         )
         material_upload_data = await material_upload_data_iterator.__anext__()
-        (type, lecture_material) = betterproto.which_one_of(
+        (type, metadata) = betterproto.which_one_of(
             material_upload_data, "material_upload_data"
         )
-        if lecture_material is not None and type == "lecture_material":
-            extension = mimetypes.guess_extension(lecture_material.file_type)
+        if metadata is not None and type == "metadata":
+            extension = MimetypeResolver.fixed_guess_extension(metadata.mimetype)
             if extension is None:
                 raise NoMimetypeMappingException()
-            local_path = self.material_storage_path / lecture_material.hash
-            local_path = local_path.parent / (local_path.stem + extension)
             async_iterator_bytes = self._to_async_iterator_bytes(
                 material_upload_data_iterator
             )
-            await self.path_dictionary_controller.add_file_async(
-                local_path,
-                lecture_material.hash,
-                async_iterator_bytes,
+            load_local_path = await self._load_from_binary_iterator(
+                async_iterator_bytes
             )
-        else:
-            raise FirstDataChunkNotMetadataException()
+            hash = self._calculate_hash(load_local_path)
+            local_path = self.material_storage_path / hash
+            local_path = local_path.parent / (local_path.name + extension)
+            self.path_dictionary_controller.copy_and_load_file(
+                load_local_path, local_path, hash, metadata.name
+            )
+        raise FirstDataChunkNotMetadataException()
+
+    async def _load_from_binary_iterator(
+        self, binary_iterator: AsyncIterator[bytes]
+    ) -> Path:
+        """Loads file from binary into into `/tmp` folder.
+
+        Args:
+            binary_iterator (AsyncIterator[bytes]): Binary iterator to work with.
+
+        Returns:
+            Path: Path to the file in `/tmp`.
+        """
+        local_path = Path("/tmp/current_evalquiz_upload")
+        with open(local_path, "ab") as local_file:
+            local_file.truncate(0)
+            while True:
+                try:
+                    data = await binary_iterator.__anext__()
+                    local_file.write(data)
+                except StopAsyncIteration:
+                    break
+        return local_path
 
     async def _to_async_iterator_bytes(
         self, material_upload_data_iterator: AsyncIterator[MaterialUploadData]
@@ -123,11 +152,25 @@ class MaterialClient:
                 "AsyncIterator[MaterialUploadData] cannot be converted into AsyncIterator[bytes]."
             )
 
+    def _calculate_hash(self, local_path: Path) -> str:
+        """Calculates blake3 hash of local file.
+
+        Args:
+            local_path (Path): Path to local file.
+
+        Returns:
+            str: Resulting hash.
+        """
+        with open(local_path, "rb") as local_file:
+            file_content = local_file.read()
+            return blake3(file_content).hexdigest()
+
     async def get_material_upload_data_iterator(
         self, lecture_material: LectureMaterial
     ) -> AsyncIterator[MaterialUploadData]:
         """Builds priority list of URLs and tries to connect to a server in the list.
         Then tries to get an asynchronous lecture material iterator and returns it, if successful.
+        Tests, if first element i reachable in order to find the lecture material.
 
         Args:
             lecture_material (LectureMaterial): LectureMaterial containing hash for the remote query.
@@ -140,13 +183,22 @@ class MaterialClient:
         """
         material_server_urls = [lecture_material.url, *self.material_server_urls]
         for url in material_server_urls:
-            channel = Channel(host=url, port=self.material_server_port)
+            channel = Channel(host="evalquiz-material-server-app-1", port=50051)
             service = MaterialServerStub(channel)
+            material_upload_data_iterator = service.get_material(
+                String(lecture_material.hash), timeout=self.request_timeout_seconds
+            )
+            result = await material_upload_data_iterator.__anext__()
             try:
+                material_upload_data_iterator = service.get_material(
+                    String(lecture_material.hash), timeout=self.request_timeout_seconds
+                )
+                await material_upload_data_iterator.__anext__()
                 material_upload_data_iterator = service.get_material(
                     String(lecture_material.hash), timeout=self.request_timeout_seconds
                 )
                 return material_upload_data_iterator
             except Exception:
                 pass
+            channel.close()
         raise LectureMaterialNotFoundOnRemotesException()

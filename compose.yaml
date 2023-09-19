@@ -6,6 +6,8 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
     links:
       - db
+    ports:
+      - 50052:50051
   db:
     image: mongo
     restart: always
@@ -14,7 +16,7 @@ services:
   mongoexpress:
     image: mongo-express
     ports:
-        - "8081:8082"
+        - "8082:8081"
     links:
       - db
     environment: 

@@ -2,6 +2,7 @@ db_root_password.txt
 testdoc_*
 pse_vortragsübung_2022
 arxiv_papers.model
+lecture_materials
 
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python

@@ -37,20 +37,21 @@ class PipelineExecution:
         input = self.input
         for pipeline_module in self.pipeline.pipeline_modules:
             yield self._build_pipeline_status(pipeline_module, ModuleStatus.RUNNING)
-            try:
-                output = await pipeline_module.run(input)
-            except PipelineExecutionException as e:
-                yield self._build_pipeline_status(
-                    pipeline_module, ModuleStatus.FAILED, None, str(e)
-                )
-                return
-            except Exception as e:
-                yield self._build_pipeline_status(
-                    pipeline_module,
-                    ModuleStatus.FAILED,
-                    None,
-                    "500: Internal Server Error: " + str(e),
-                )
+            #            try:
+            output = await pipeline_module.run(input)
+            #            except PipelineExecutionException as exception:
+            #                yield self._build_pipeline_status(
+            #                    pipeline_module, ModuleStatus.FAILED, None, str(exception)
+            #                )
+            #                raise exception
+            #            except Exception as exception:
+            #                yield self._build_pipeline_status(
+            #                    pipeline_module,
+            #                    ModuleStatus.FAILED,
+            #                    None,
+            #                    "500: Internal Server Error: " + str(exception),
+            #                )
+            #                raise exception
             input = output
         last_pipeline_module = self.pipeline.pipeline_modules[-1]
         yield self._build_pipeline_status(
