@@ -1,5 +1,6 @@
 from pathlib import Path
 import subprocess
+from pymongo import MongoClient
 import pypandoc
 from evalquiz_proto.shared.generated import LectureMaterial
 from evalquiz_proto.shared.internal_lecture_material import InternalLectureMaterial
@@ -13,7 +14,7 @@ class MarkdownConverter:
             Path(__file__).parent / "lecture_materials_markdown"
         ),
         path_dictionary_controller: PathDictionaryController = PathDictionaryController(
-            mongodb_database="lecture_materials_markdown_db"
+            MongoClient("pipeline-server-db", 27017), "lecture_materials_markdown_db"
         ),
     ) -> None:
         """Constructor of MarkdownConverter.

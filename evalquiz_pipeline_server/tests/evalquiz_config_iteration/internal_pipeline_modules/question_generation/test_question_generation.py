@@ -231,5 +231,4 @@ def test_is_question_to_generate(
 
 def test_internal_config_to_json(internal_config_small: InternalConfig) -> None:
     internal_config_json = internal_config_small.to_json(include_default_values=True)
-    internal_config = InternalConfig().from_json(internal_config_json)
-    pass
+    InternalConfig().from_json(internal_config_json)

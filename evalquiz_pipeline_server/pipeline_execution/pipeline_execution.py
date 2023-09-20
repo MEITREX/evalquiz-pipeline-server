@@ -2,9 +2,6 @@ from typing import Any, AsyncIterator, Optional
 from evalquiz_pipeline_server.pipeline_execution.internal_pipeline_module import (
     InternalPipelineModule,
 )
-from evalquiz_proto.shared.exceptions import (
-    PipelineExecutionException,
-)
 from evalquiz_pipeline_server.pipeline_execution.pipeline import Pipeline
 from evalquiz_proto.shared.generated import (
     BatchStatus,

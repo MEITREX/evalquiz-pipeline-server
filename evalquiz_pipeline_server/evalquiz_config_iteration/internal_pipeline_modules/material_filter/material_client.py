@@ -1,10 +1,10 @@
-from datetime import datetime
 import os
 from pathlib import Path
 from typing import AsyncIterator
 import betterproto
 from blake3 import blake3
 from grpclib.client import Channel
+from pymongo import MongoClient
 from evalquiz_proto.shared.exceptions import (
     FirstDataChunkNotMetadataException,
     LectureMaterialNotFoundOnRemotesException,
@@ -28,7 +28,9 @@ class MaterialClient:
         self,
         material_server_urls: list[str] = [],
         material_storage_path: Path = Path(__file__).parent / "lecture_materials",
-        path_dictionary_controller: PathDictionaryController = PathDictionaryController(),
+        path_dictionary_controller: PathDictionaryController = PathDictionaryController(
+            MongoClient("pipeline-server-db", 27017)
+        ),
     ) -> None:
         """Constructor of MaterialClient.
         Creates `material_storage_path` folder, if not existent.
@@ -183,12 +185,8 @@ class MaterialClient:
         """
         material_server_urls = [lecture_material.url, *self.material_server_urls]
         for url in material_server_urls:
-            channel = Channel(host="evalquiz-material-server-app-1", port=50051)
+            channel = Channel(host=url, port=50051)
             service = MaterialServerStub(channel)
-            material_upload_data_iterator = service.get_material(
-                String(lecture_material.hash), timeout=self.request_timeout_seconds
-            )
-            result = await material_upload_data_iterator.__anext__()
             try:
                 material_upload_data_iterator = service.get_material(
                     String(lecture_material.hash), timeout=self.request_timeout_seconds

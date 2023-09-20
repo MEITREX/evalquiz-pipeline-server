@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from typing import Generator
+from pymongo import MongoClient
 import pytest
 from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_modules.material_filter.material_client import (
     MaterialClient,
@@ -24,7 +25,8 @@ def material_client() -> Generator[MaterialClient, None, None]:
     if not os.path.exists(material_storage_path):
         os.makedirs(material_storage_path)
     path_dictionary_controller = PathDictionaryController(
-        mongodb_database="lecture_material_test_db"
+        MongoClient("pipeline-server-db", 27017),
+        mongodb_database="lecture_material_test_db",
     )
     path_dictionary_controller.mongodb_client.drop_database("lecture_material_test_db")
     yield MaterialClient(
