@@ -68,7 +68,7 @@ def test_composition() -> None:
     ConfigIterationPipeline()
 
 
-# @pytest.mark.skip(reason="API call is made in every test run.")
+@pytest.mark.skip(reason="API call is made in every test run.")
 @pytest.mark.asyncio
 async def test_material_filter_and_question_generation_pipeline_execution(
     material_filter: MaterialFilter, internal_config: InternalConfig
@@ -84,4 +84,5 @@ async def test_material_filter_and_question_generation_pipeline_execution(
             pipeline_statuses.append(pipeline_status)
         except StopAsyncIteration:
             break
-    assert pipeline_status.result == internal_config
+    assert pipeline_status.result is not None
+    assert pipeline_status.result.internal_config == internal_config

@@ -4,22 +4,22 @@ services:
       context: .
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
-    links:
-      - db
+    depends_on:
+      - pipeline-server-db
     ports:
       - 50052:50051
   pipeline-server-db:
     image: mongo
     restart: always
     volumes:
-      - mongodb:/data/db
+      - pipeline-server-mongodb:/data/db
   mongoexpress:
     image: mongo-express
     ports:
-        - "8082:8081"
-    links:
-      - db
-    environment: 
-        - ME_CONFIG_MONGODB_URL=mongodb://db:27017
+      - "8082:8081"
+    depends_on:
+      - pipeline-server-db
+    environment:
+      - ME_CONFIG_MONGODB_URL=mongodb://db:27017
 volumes:
-  mongodb:
+  pipeline-server-mongodb:

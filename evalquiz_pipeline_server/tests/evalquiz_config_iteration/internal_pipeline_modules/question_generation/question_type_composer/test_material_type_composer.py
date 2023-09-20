@@ -14,7 +14,7 @@ def test_result_template(multiple_choice_composer: MultipleChoiceComposer) -> No
     generation_result = GenerationResult()
     result_template = multiple_choice_composer.result_template(generation_result)
     assert (
-        "<result>" in result_template
+        "<result type=generation>" in result_template
         and "</result>" in result_template
         and "DISTRACTOR_TEXT_1" in result_template
     )

@@ -26,7 +26,7 @@ def material_client() -> Generator[MaterialClient, None, None]:
         os.makedirs(material_storage_path)
     path_dictionary_controller = PathDictionaryController(
         MongoClient("pipeline-server-db", 27017),
-        mongodb_database="lecture_material_test_db",
+        "lecture_material_test_db",
     )
     path_dictionary_controller.mongodb_client.drop_database("lecture_material_test_db")
     yield MaterialClient(
