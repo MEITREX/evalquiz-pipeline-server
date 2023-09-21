@@ -10,8 +10,6 @@ services:
       - 50052:50051
   pipeline-server-db:
     image: mongo
-    volumes:
-      - pipeline-server-mongodb:/data/db
   mongoexpress:
     image: mongo-express
     ports:
@@ -20,5 +18,3 @@ services:
       - pipeline-server-db
     environment:
       - ME_CONFIG_MONGODB_URL=mongodb://db:27017
-volumes:
-  pipeline-server-mongodb:
