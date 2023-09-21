@@ -12,7 +12,6 @@ Welcome to evalquiz-pipeline-server's documentation!
 
    evalquiz_pipeline_server
    evalquiz_proto
-   setup
 
 
 Indices and tables

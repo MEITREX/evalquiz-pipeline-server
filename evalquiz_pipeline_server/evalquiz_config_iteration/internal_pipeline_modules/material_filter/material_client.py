@@ -102,9 +102,7 @@ class MaterialClient:
             load_local_path = await self._load_from_binary_iterator(
                 async_iterator_bytes
             )
-            print(load_local_path, flush=True)
             hash = self._calculate_hash(load_local_path)
-            print(hash)
             local_path = self.material_storage_path / hash
             local_path = local_path.parent / (local_path.name + extension)
             self.path_dictionary_controller.copy_and_load_file(
