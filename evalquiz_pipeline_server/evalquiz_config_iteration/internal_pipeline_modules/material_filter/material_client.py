@@ -61,17 +61,17 @@ class MaterialClient:
         Returns:
             InternalLectureMaterial:
         """
-        try:
-            local_path = self.path_dictionary_controller.get_file_path_from_hash(
-                lecture_material.hash
-            )
-            return InternalLectureMaterial(local_path, lecture_material)
-        except KeyError:
-            await self.add_to_path_dictionary_controller_from_server(lecture_material)
-            local_path = self.path_dictionary_controller.get_file_path_from_hash(
-                lecture_material.hash
-            )
-            return InternalLectureMaterial(local_path, lecture_material)
+        #try:
+        #    local_path = self.path_dictionary_controller.get_file_path_from_hash(
+        #        lecture_material.hash
+        #    )
+        #    return InternalLectureMaterial(local_path, lecture_material)
+        #except KeyError:
+        await self.add_to_path_dictionary_controller_from_server(lecture_material)
+        local_path = self.path_dictionary_controller.get_file_path_from_hash(
+            lecture_material.hash
+        )
+        return InternalLectureMaterial(local_path, lecture_material)
 
     async def add_to_path_dictionary_controller_from_server(
         self, request_lecture_material: LectureMaterial
@@ -102,13 +102,16 @@ class MaterialClient:
             load_local_path = await self._load_from_binary_iterator(
                 async_iterator_bytes
             )
+            print(load_local_path, flush=True)
             hash = self._calculate_hash(load_local_path)
+            print(hash)
             local_path = self.material_storage_path / hash
             local_path = local_path.parent / (local_path.name + extension)
             self.path_dictionary_controller.copy_and_load_file(
                 load_local_path, local_path, hash, metadata.name
             )
-        raise FirstDataChunkNotMetadataException()
+        else:
+            raise FirstDataChunkNotMetadataException()
 
     async def _load_from_binary_iterator(
         self, binary_iterator: AsyncIterator[bytes]

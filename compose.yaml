@@ -10,7 +10,6 @@ services:
       - 50052:50051
   pipeline-server-db:
     image: mongo
-    restart: always
     volumes:
       - pipeline-server-mongodb:/data/db
   mongoexpress:
