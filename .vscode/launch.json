@@ -10,6 +10,15 @@
             "request": "launch",
             "module": "evalquiz_pipeline_server.server_component",
             "justMyCode": true
+        },
+        {
+            "name": "Python: Debug Tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "purpose": ["debug-test"],
+            "console": "integratedTerminal",
+            "justMyCode": true
         }
     ]
 }

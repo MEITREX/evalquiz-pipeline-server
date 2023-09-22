@@ -37,6 +37,7 @@ class PipelineServerService(PipelineServerBase):
         Returns:
             AsyncIterator[PipelineStatus]: An iterator which elements represent the current status of the config iteration.
         """
+        print(internal_config, flush=True)
         pipeline_status_iterator = self.pipeline_executor.run_pipeline(
             "evalquiz_config_iteration", internal_config
         )
