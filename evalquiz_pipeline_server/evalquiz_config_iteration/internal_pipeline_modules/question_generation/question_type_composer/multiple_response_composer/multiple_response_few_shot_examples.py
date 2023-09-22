@@ -4,7 +4,7 @@ from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_module
 from evalquiz_proto.shared.generated import (
     Capability,
     EducationalObjective,
-    MultipleChoice,
+    MultipleResponse,
     Question,
     QuestionType,
     Relationship,
@@ -208,7 +208,7 @@ The Product Backlog may also be adjusted to meet new opportunities.
 """
 
 few_shot_example_1 = FewShotExample(
-    Question(QuestionType.MULTIPLE_CHOICE, evaluation_results={}),
+    Question(QuestionType.MULTIPLE_RESPONSE, evaluation_results={}),
     [
         Capability(
             ["scrum", "master"],
@@ -218,20 +218,22 @@ few_shot_example_1 = FewShotExample(
     ],
     few_shot_example_filtered_text_1,
     GenerationResult(
-        multiple_choice=MultipleChoice(
+        multiple_response=MultipleResponse(
             "Which of the following is true about the Scrum Master?",
-            "The Scrum Master is part of the Scrum Team.",
+            [
+                "The Scrum Master is part of the Scrum Team.",
+                "The Scrum Master can participate as a developer.",
+            ],
             [
                 "The Scrum Master is not accountable for the Scrum Team’s effectiveness.",
                 "The Scrum Master develops how the product should look like.",
-                "Acts as a barrier between stakeholders and the Scrum Team.",
             ],
         )
     ),
 )
 
 few_shot_example_2 = FewShotExample(
-    Question(QuestionType.MULTIPLE_CHOICE, evaluation_results={}),
+    Question(QuestionType.MULTIPLE_RESPONSE, evaluation_results={}),
     [
         Capability(
             ["product", "owner"],
@@ -241,16 +243,16 @@ few_shot_example_2 = FewShotExample(
     ],
     few_shot_example_filtered_text_2,
     GenerationResult(
-        multiple_choice=MultipleChoice(
+        multiple_response=MultipleResponse(
             "What is a responsibility of the Product Owner?",
-            "Maximize the value of the product.",
             [
-                "Write most of the implementation code.",
-                "Ensure that all Scrum events take place, and are held in a positive manner.",
-                "Represent the needs of only himself as a stakeholder in the Product Backlog.",
+                "Maximize the value of the product.",
+                "Ensure that attendees are prepared to discuss the most important Product Backlog items",
+                "Cancel the Sprint if necessary",
             ],
+            ["Write most of the implementation code."],
         )
     ),
 )
 
-multiple_choice_few_shot_examples = [few_shot_example_1, few_shot_example_2]
+multiple_response_few_shot_examples = [few_shot_example_1, few_shot_example_2]

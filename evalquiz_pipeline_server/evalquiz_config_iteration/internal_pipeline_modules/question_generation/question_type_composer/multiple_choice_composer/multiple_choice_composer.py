@@ -24,7 +24,7 @@ class MultipleChoiceComposer(QuestionTypeComposer, GenerationResultTemplate):
                 multiple_choice=MultipleChoice(
                     "QUESTION_TEXT",
                     "ANSWER_TEXT",
-                    ["DISTRACTOR_TEXT_1", "DISTRACTOR_TEXT_2"],
+                    ["DISTRACTOR_TEXT_1", "DISTRACTOR_TEXT_2", "DISTRACTOR_TEXT_3"],
                 )
             ),
             multiple_choice_few_shot_examples,
@@ -35,7 +35,7 @@ class MultipleChoiceComposer(QuestionTypeComposer, GenerationResultTemplate):
         return (
             self.result_template(self.generation_result)
             + """Where QUESTION_TEXT is the question.
-ANSWER_TEXT the only valid answer to the question. And DISTRACTOR_TEXT_1, DISTRACTOR_TEXT_2 answer options that are false.
+ANSWER_TEXT the only valid answer to the question. And DISTRACTOR_TEXT_1, DISTRACTOR_TEXT_2, DISTRACTOR_TEXT_3 answer options that are false.
 
 """
         )

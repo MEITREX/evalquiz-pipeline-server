@@ -61,12 +61,12 @@ class MaterialClient:
         Returns:
             InternalLectureMaterial:
         """
-        #try:
+        # try:
         #    local_path = self.path_dictionary_controller.get_file_path_from_hash(
         #        lecture_material.hash
         #    )
         #    return InternalLectureMaterial(local_path, lecture_material)
-        #except KeyError:
+        # except KeyError:
         await self.add_to_path_dictionary_controller_from_server(lecture_material)
         local_path = self.path_dictionary_controller.get_file_path_from_hash(
             lecture_material.hash
