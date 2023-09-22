@@ -3,6 +3,7 @@ from evalquiz_pipeline_server.pipeline_execution.internal_pipeline_module import
     InternalPipelineModule,
 )
 from evalquiz_pipeline_server.pipeline_execution.pipeline import Pipeline
+from evalquiz_proto.shared.exceptions import PipelineExecutionException
 from evalquiz_proto.shared.generated import (
     BatchStatus,
     ModuleStatus,
@@ -34,21 +35,21 @@ class PipelineExecution:
         input = self.input
         for pipeline_module in self.pipeline.pipeline_modules:
             yield self._build_pipeline_status(pipeline_module, ModuleStatus.RUNNING)
-            #            try:
-            output = await pipeline_module.run(input)
-            #            except PipelineExecutionException as exception:
-            #                yield self._build_pipeline_status(
-            #                    pipeline_module, ModuleStatus.FAILED, None, str(exception)
-            #                )
-            #                raise exception
-            #            except Exception as exception:
-            #                yield self._build_pipeline_status(
-            #                    pipeline_module,
-            #                    ModuleStatus.FAILED,
-            #                    None,
-            #                    "500: Internal Server Error: " + str(exception),
-            #                )
-            #                raise exception
+            try:
+                output = await pipeline_module.run(input)
+            except PipelineExecutionException as exception:
+                yield self._build_pipeline_status(
+                    pipeline_module, ModuleStatus.FAILED, None, str(exception)
+                )
+                break
+            except Exception as exception:
+                yield self._build_pipeline_status(
+                    pipeline_module,
+                    ModuleStatus.FAILED,
+                    None,
+                    "500: Internal Server Error: " + str(exception),
+                )
+                break
             input = output
         last_pipeline_module = self.pipeline.pipeline_modules[-1]
         yield self._build_pipeline_status(

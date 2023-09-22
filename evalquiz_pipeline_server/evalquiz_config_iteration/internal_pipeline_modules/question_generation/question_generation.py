@@ -12,7 +12,6 @@ from evalquiz_pipeline_server.evalquiz_config_iteration.internal_pipeline_module
 )
 from evalquiz_proto.shared.exceptions import (
     MissingDefaultInternalConfigAttributeException,
-    ResultException,
     ResultSectionNotFoundException,
     ResultSectionNotParsableException,
 )
@@ -130,10 +129,7 @@ class QuestionGeneration(InternalPipelineModule, QuestionReprocessDecider):
                 )
                 llm_client = self.api_client_registry.llm_clients[model]
                 result_text = llm_client.request_result_text(messages)
-                try:
-                    result = self.parse_result(question.question_type, result_text)
-                except ResultException:
-                    pass
+                result = self.parse_result(question.question_type, result_text)
                 question.generation_result = result
                 question.evaluation_results = {}
 

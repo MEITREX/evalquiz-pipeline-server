@@ -18,7 +18,7 @@ class GPT4Client(LLMClient):
     def __init__(self, variant: str = "gpt-4"):
         self.variant = variant
 
-    @ratelimit.ratelimited(max_count=1, interval=timedelta(seconds=12), block=True)
+    @ratelimit.ratelimited(max_count=1, interval=timedelta(seconds=5), block=True)
     def request_result_text(self, messages: list[dict[str, str]]) -> str:
         completion = openai.ChatCompletion.create(
             deployment_id="EvalQuiz-GPT4", model=self.variant, messages=messages

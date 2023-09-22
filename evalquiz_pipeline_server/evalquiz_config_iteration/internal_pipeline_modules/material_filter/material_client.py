@@ -197,7 +197,7 @@ class MaterialClient:
                     String(lecture_material.hash), timeout=self.request_timeout_seconds
                 )
                 return material_upload_data_iterator
-            except Exception:
-                pass
+            except Exception as exception:
+                print(exception)
             channel.close()
         raise LectureMaterialNotFoundOnRemotesException()
