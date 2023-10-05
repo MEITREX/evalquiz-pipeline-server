@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from pathlib import Path
 from typing import AsyncIterator
 import betterproto
@@ -122,7 +123,8 @@ class MaterialClient:
         Returns:
             Path: Path to the file in `/tmp`.
         """
-        local_path = Path("/tmp/current_evalquiz_upload")
+        timestamp = datetime.utcnow().isoformat()
+        local_path = Path("/tmp/current_evalquiz_upload_" + timestamp)
         with open(local_path, "ab") as local_file:
             local_file.truncate(0)
             while True:

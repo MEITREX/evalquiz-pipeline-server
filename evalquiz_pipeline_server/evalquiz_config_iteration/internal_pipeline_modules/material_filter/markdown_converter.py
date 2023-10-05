@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import subprocess
 from pymongo import MongoClient
@@ -18,6 +19,7 @@ class MarkdownConverter:
         ),
     ) -> None:
         """Constructor of MarkdownConverter.
+        Creates `material_storage_path` folder, if not existent.
 
         Args:
             material_storage_path (Path, optional): Path to where the generated markdown files should be stored. Defaults to ( Path(__file__).parent / "lecture_materials_markdown" ).
@@ -25,6 +27,8 @@ class MarkdownConverter:
         """
         self.path_dictionary_controller = path_dictionary_controller
         self.material_storage_path = material_storage_path
+        if not os.path.exists(material_storage_path):
+            os.mkdir(material_storage_path)
 
     def convert_material(
         self, internal_lecture_material: InternalLectureMaterial
@@ -39,10 +43,10 @@ class MarkdownConverter:
         Returns:
             InternalLectureMaterial: Converted output InternalLectureMaterial, which references a markdown document.
         """
-        #try:
-        #    lecture_material = internal_lecture_material.cast_to_lecture_material()
-        #    return self.retrieve_converted_material(lecture_material)
-        #except KeyError:
+        # try:
+        #     lecture_material = internal_lecture_material.cast_to_lecture_material()
+        #     return self.retrieve_converted_material(lecture_material)
+        # except KeyError:
         internal_lecture_material_md = self.run_conversion(
             internal_lecture_material
         )
