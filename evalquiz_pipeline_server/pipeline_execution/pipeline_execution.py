@@ -41,7 +41,7 @@ class PipelineExecution:
                 yield self._build_pipeline_status(
                     pipeline_module, ModuleStatus.FAILED, None, str(exception)
                 )
-                return
+                raise exception
             except Exception as exception:
                 yield self._build_pipeline_status(
                     pipeline_module,
@@ -49,7 +49,7 @@ class PipelineExecution:
                     None,
                     "500: Internal Server Error: " + str(exception),
                 )
-                return
+                raise exception
             input = output
         last_pipeline_module = self.pipeline.pipeline_modules[-1]
         yield self._build_pipeline_status(
