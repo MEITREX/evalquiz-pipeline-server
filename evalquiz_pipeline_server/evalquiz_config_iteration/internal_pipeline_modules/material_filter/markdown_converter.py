@@ -39,18 +39,18 @@ class MarkdownConverter:
         Returns:
             InternalLectureMaterial: Converted output InternalLectureMaterial, which references a markdown document.
         """
-        try:
-            lecture_material = internal_lecture_material.cast_to_lecture_material()
-            return self.retrieve_converted_material(lecture_material)
-        except KeyError:
-            internal_lecture_material_md = self.run_conversion(
-                internal_lecture_material
-            )
-            self.path_dictionary_controller.load_file(
-                internal_lecture_material_md.local_path,
-                internal_lecture_material_md.hash,
-            )
-            return internal_lecture_material_md
+        #try:
+        #    lecture_material = internal_lecture_material.cast_to_lecture_material()
+        #    return self.retrieve_converted_material(lecture_material)
+        #except KeyError:
+        internal_lecture_material_md = self.run_conversion(
+            internal_lecture_material
+        )
+        self.path_dictionary_controller.load_file(
+            internal_lecture_material_md.local_path,
+            internal_lecture_material_md.hash,
+        )
+        return internal_lecture_material_md
 
     def run_conversion(
         self, internal_lecture_material: InternalLectureMaterial
